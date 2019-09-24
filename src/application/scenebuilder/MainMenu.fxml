@@ -14,7 +14,7 @@
       <Text layoutX="509.0" layoutY="164.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Current Creations:" />
       <ScrollPane layoutX="352.0" layoutY="254.0" prefHeight="381.0" prefWidth="434.0">
          <content>
-            <VBox fx:id="videoBox" prefHeight="381.0" prefWidth="432.0" />
+            <VBox fx:id="videoBox" prefHeight="381.0" prefWidth="432.0" spacing="5.0" />
          </content>
       </ScrollPane>
    </children>

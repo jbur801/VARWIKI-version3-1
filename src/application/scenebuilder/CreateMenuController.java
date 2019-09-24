@@ -30,26 +30,42 @@ public class CreateMenuController {
 	private int audioCount=0;
 
 	@FXML
-	private AnchorPane Search;
+    private AnchorPane Search;
+
+    @FXML
+    private TextField searchTextArea;
+
+    @FXML
+    private Button searchButton;
+
+    @FXML
+    private Button testButton;
+
+    @FXML
+    private Button saveButton;
+
+    @FXML
+    private TextArea displayTextArea;
+
+    @FXML
+    private VBox audioBox;
+
+    @FXML
+    private Button createButton;
+
+    @FXML
+    private Button returnButton;
 
 	@FXML
-	private TextField searchTextArea;
-
+	void handleCreate() {
+		
+	}
+	
 	@FXML
-	private Button searchButton;
-
-	@FXML
-	private Button testButton;
-
-	@FXML
-	private Button saveButton;
-
-	@FXML
-	private TextArea displayTextArea;
-
-	@FXML
-	private VBox audioBox;
-
+	void handleReturn() {
+		Main.changeScene("MainMenu.fxml", this);
+	}
+	
 	@FXML
 	void handleSaveAudio(ActionEvent event) {
 		audioCount++;
