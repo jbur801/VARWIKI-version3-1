@@ -14,24 +14,17 @@ import javafx.stage.WindowEvent;
 public class Main extends Application {
 
 	private ExecutorService _team = Executors.newSingleThreadExecutor(); 
+	private static Stage _stage;
 	
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 
 		//Initiate the first Scene
 		initiateFileSystem();
+		_stage=primaryStage;
+		changeScene("scenebuilder/MainMenu.fxml",this);
 
 		
-		try {
-			 FXMLLoader loader = new FXMLLoader();
-		        loader.setLocation(this.getClass().getResource("CreateMenu.fxml"));
-		        Parent layout = loader.load();
-		        Scene scene = new Scene(layout);
-		        primaryStage.setScene(scene);
-		        primaryStage.show();
-			}catch(Exception e) {
-				
-			}
 		//Sets the whole program to close when application window is closed
 		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 
@@ -44,6 +37,19 @@ public class Main extends Application {
 
 	public static void main(String[] args) {
 		launch();
+	}
+	
+	public static void changeScene(String fxml, Object location) {
+		try {
+			 FXMLLoader loader = new FXMLLoader();
+		        loader.setLocation(location.getClass().getResource(fxml));
+		        Parent layout = loader.load();
+		        Scene scene = new Scene(layout);
+		        _stage.setScene(scene);
+		        _stage.show();
+			}catch(Exception e) {
+				e.printStackTrace();
+			}
 	}
 	
 	public void initiateFileSystem() {

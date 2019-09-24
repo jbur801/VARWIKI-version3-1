@@ -21,7 +21,7 @@ public class RunBash extends Task<List<String>>{
 	private List<String> _stdOut = new ArrayList<String>();
 	private ProcessBuilder _pb;
 
-	RunBash(String command){
+	public RunBash(String command){
 		_command = command;
 		_pb = new ProcessBuilder("bash", "-c", _command);
 		

@@ -32,7 +32,7 @@ public class AudioBar{
 	private HBox _bar;
 	private static boolean _play=false;
 
-	AudioBar(String text,String fileName,VBox parent){
+	public AudioBar(String text,String fileName,VBox parent){
 		_parent=parent;
 		_playButton.setMinWidth(75);
 		_deleteButton.setMinWidth(75);
