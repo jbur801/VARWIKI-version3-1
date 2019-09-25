@@ -24,7 +24,7 @@ import application.*;
 
 public class CreateMenuController {
 
-	private String _term;
+	private String _term = "";
 	private ExecutorService _team = Executors.newSingleThreadExecutor(); 
 	private boolean _runningThread;
 	private int audioCount=0;
@@ -61,11 +61,15 @@ public class CreateMenuController {
     
 	@FXML
 	void handleCreate() {
+		if(_runningThread) {
+			return;
+		}
 		String name = videoName.getText();
 		if(name.isEmpty()) {
 			error("Please enter a name for your creation");
 			return;
 		}
+
 		
 		Object[] audioFiles = audioBox.getChildren().toArray();
 		String audioFileNames="";
@@ -102,10 +106,12 @@ public class CreateMenuController {
 								@Override
 								public void handle(WorkerStateEvent event) {
 									_runningThread=false;
+									Main.changeScene("MainMenu.fxml", this);
 								}
 							});
 						} catch (NumberFormatException | InterruptedException | ExecutionException e) {
 							error("Video Creation Failed");
+							Main.changeScene("MainMenu.fxml", this);
 						}
 					}
 				});

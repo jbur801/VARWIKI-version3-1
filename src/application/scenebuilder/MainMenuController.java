@@ -7,12 +7,16 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
@@ -43,7 +47,7 @@ public class MainMenuController {
     private Button muteButton;
     
     @FXML
-    private ListView videoListView;
+    private ListView<Node> videoListView;
 
 	{
 		RunBash bash = new RunBash("List=`ls ./VideoCreations` ; List=${List//.???/} ; printf \"${List// /.\\\\n}\\n\"");
@@ -60,11 +64,16 @@ public class MainMenuController {
 
 				if(_creations.get(0).isEmpty()) {
 					Text noCreations = new Text("No Current Creations");
-					videoBox.getChildren().add(noCreations);
+					List<Node> noVideos = new ArrayList<Node>();
+					noVideos.add(noCreations);
+					ObservableList<Node> noList = FXCollections.observableArrayList(noVideos);
+					videoListView.setItems(noList);
 				}else {
+				ObservableList<Node> videoList = FXCollections.observableArrayList();
 					for(String video:_creations) {
-						new VideoBar(video,videoBox);
+						new VideoBar(video,videoList);
 					}
+					videoListView.setItems(videoList);
 				}
 			}
 		});

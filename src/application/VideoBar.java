@@ -3,10 +3,13 @@ package application;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javafx.collections.ObservableList;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.ListView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
@@ -22,29 +25,16 @@ public class VideoBar {
 	private ExecutorService _team = Executors.newSingleThreadExecutor(); 
 	private boolean _deleteOption;
 	private String _name;
-	private VBox _parent;
+	private ObservableList<Node> _parent;
 	private Button _playButton=new Button("Play");
 	private Button _deleteButton=new Button("delete");
 	private HBox _bar;
 
 
-	public VideoBar(String name, VBox parent){
+	public VideoBar(String name, ObservableList<Node> parent){
 		_name=name;
 		_parent=parent;
 
-		_playButton.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent event) {
-				RunBash play = new RunBash("ffplay -autoexit ./VideoCreations/"+_name+".mp4");
-				_team.submit(play);
-
-				play.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
-					@Override
-					public void handle(WorkerStateEvent event) {
-					}
-				});
-			}
-		});
 
 		_deleteButton.setOnAction(new EventHandler<ActionEvent>() {
 
@@ -62,9 +52,9 @@ public class VideoBar {
 						public void handle(ActionEvent event) {
 							RunBash delete = new RunBash("rm -f ./VideoCreations/"+_name+".mp4");
 							_team.submit(delete);
-							_parent.getChildren().remove(_bar);	
-							if(_parent.getChildren().isEmpty()) {
-								_parent.getChildren().add(new Text("No more Creations"));
+							_parent.remove(_bar);	
+							if(_parent.isEmpty()) {
+								_parent.add(new Text("No more Creations"));
 							}
 
 						}
@@ -77,16 +67,15 @@ public class VideoBar {
 							_deleteOption=false;
 						}
 					});
-
 					_bar.getChildren().addAll(confirm,yesButton,noButton);
 				}
 			}
 		});
 
 		Text text = new Text(_name);
-		_bar = new HBox(_playButton,_deleteButton,text);
+		_bar = new HBox(_deleteButton,text);
 		_bar.setSpacing(9);
-		_parent.getChildren().add(_bar);
+		_parent.add(_bar);
 	}
 
 
