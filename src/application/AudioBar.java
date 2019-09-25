@@ -18,7 +18,7 @@ import javafx.scene.text.Text;
  * This class creates a VideoBar that displays buttons that allows the user to play or delete a video. 
  * If they choose to delete a video a confirmation option appears to the right of the Video bar.
  */
-public class AudioBar{
+public class AudioBar extends HBox{
 
 	private ExecutorService _team = Executors.newSingleThreadExecutor(); 
 	private boolean _deleteOption;
@@ -29,7 +29,7 @@ public class AudioBar{
 	private Button _upButton=new Button("/\\");
 	private Button _downButton=new Button("\\/");
 	private Text _text;
-	private HBox _bar;
+	private HBox _bar =this;
 	private static boolean _play=false;
 
 	public AudioBar(String text,String fileName,VBox parent){
@@ -39,9 +39,9 @@ public class AudioBar{
 		_text= new Text(text);
 		_text.wrappingWidthProperty().set(400);
 		_name=fileName;
-		_bar = new HBox(_playButton,_deleteButton,_upButton,_downButton,_text);
-		_bar.setSpacing(2);	
-		_parent.getChildren().add(_bar);
+		this.getChildren().addAll(_playButton,_deleteButton,_upButton,_downButton,_text);
+		this.setSpacing(2);	
+		_parent.getChildren().add(this);
 		buttonSetup();
 
 	}
@@ -102,6 +102,11 @@ public class AudioBar{
 
 			}
 		});
+	}
+	
+	
+	public String toString() {
+		return " ./temp/" + _name;
 	}
 
 

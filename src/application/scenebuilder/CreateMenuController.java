@@ -56,9 +56,62 @@ public class CreateMenuController {
     @FXML
     private Button returnButton;
 
+    @FXML
+    private TextField videoName;
+    
 	@FXML
 	void handleCreate() {
+		String name = videoName.getText();
+		if(name.isEmpty()) {
+			error("Please enter a name for your creation");
+			return;
+		}
 		
+		Object[] audioFiles = audioBox.getChildren().toArray();
+		String audioFileNames="";
+		for(Object audio:audioFiles) {
+			audioFileNames = audioFileNames+audio.toString();
+		}
+		
+		System.out.println(audioFileNames);
+		RunBash mergeAudio = new RunBash("sox "+ audioFileNames +" ./temp/output.wav");
+		_team.submit(mergeAudio);	
+		mergeAudio.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+			@Override
+			public void handle(WorkerStateEvent event) {
+				RunBash audioLengthSoxi = new RunBash("soxi -D ./temp/output.wav");
+				_team.submit(audioLengthSoxi);
+				_runningThread = true;
+				audioLengthSoxi.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+					@Override
+					public void handle(WorkerStateEvent event) {
+						_runningThread=false;
+						double audioLength;
+
+						try {
+							audioLength = Double.parseDouble(audioLengthSoxi.get().get(0));
+							RunBash createVideo = new RunBash("ffmpeg -i ./temp/output.wav -vn -ar 44100 -ac 2 -b:a 192k ./temp/output.mp3 &> /dev/null "
+									+ "; ffmpeg -f lavfi -i color=c=blue:s=320x240:d="+audioLength 
+									+ " -vf \"drawtext=fontfile=/path/to/font.ttf:fontsize=30: "
+									+ "fontcolor=white:x=(w-text_w)/2:y=(h-text_h)/2:text="+_term+"\" ./temp/"+name+".mp4 &> /dev/null "
+									+ "; ffmpeg -i ./temp/"+name +".mp4 -i ./temp/output.mp3 -c:v copy -c:a aac -strict experimental "
+									+ "./VideoCreations/"+name+".mp4  &> /dev/null");
+							_team.submit(createVideo);
+							_runningThread = true;
+							createVideo.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+								@Override
+								public void handle(WorkerStateEvent event) {
+									_runningThread=false;
+								}
+							});
+						} catch (NumberFormatException | InterruptedException | ExecutionException e) {
+							error("Video Creation Failed");
+						}
+					}
+				});
+
+			}
+		});
 	}
 	
 	@FXML
@@ -135,6 +188,9 @@ public class CreateMenuController {
 	void handleTestAudio(ActionEvent event) {
 		System.out.println(displayTextArea.getSelectedText());
 		String selectedText = displayTextArea.getSelectedText();
+		if(selectedText.isEmpty()) {
+			return;
+		}
 		RunBash audioCreation = new RunBash("echo \"" + selectedText + "\" | festival --tts");
 		_team.submit(audioCreation);
 		_runningThread = true;
