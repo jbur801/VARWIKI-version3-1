@@ -18,6 +18,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.media.MediaView;
 import javafx.scene.text.Text;
 
 import application.*;
@@ -35,8 +36,10 @@ public class CreateMenuController {
     @FXML
     private TextField searchTextArea;
 
+   
+    
     @FXML
-    private Button searchButton;
+    private Button _searchButton;
 
     @FXML
     private Button testButton;
@@ -159,7 +162,7 @@ public class CreateMenuController {
 			return;
 		}
 
-		searchButton.setText("Searching...");
+		_searchButton.setText("Searching...");
 
 		//wiki search bash command is created and run on another thread
 		RunBash command = new RunBash("wikit "+ _term);
@@ -178,9 +181,11 @@ public class CreateMenuController {
 					if(text.contentEquals(_term + " not found :^(" )) {
 						error("search term not found");
 					}
-					searchButton.setText("search");
-
+					_searchButton.setText("search");
+					
 					displayTextArea.setText(text);
+					searchTextArea.setEditable(false);
+					_searchButton.setVisible(false);;
 				} catch (InterruptedException | ExecutionException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

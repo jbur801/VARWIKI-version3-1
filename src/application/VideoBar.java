@@ -25,15 +25,15 @@ public class VideoBar {
 	private ExecutorService _team = Executors.newSingleThreadExecutor(); 
 	private boolean _deleteOption;
 	private String _name;
-	private ObservableList<Node> _parent;
+	private ObservableList<HBox> _parent;
 	private Button _playButton=new Button("Play");
 	private Button _deleteButton=new Button("delete");
 	private HBox _bar;
 
 
-	public VideoBar(String name, ObservableList<Node> parent){
+	public VideoBar(String name, ObservableList<HBox> videoList){
 		_name=name;
-		_parent=parent;
+		_parent=videoList;
 
 
 		_deleteButton.setOnAction(new EventHandler<ActionEvent>() {
@@ -53,9 +53,11 @@ public class VideoBar {
 							RunBash delete = new RunBash("rm -f ./VideoCreations/"+_name+".mp4");
 							_team.submit(delete);
 							_parent.remove(_bar);	
+							/**
 							if(_parent.isEmpty()) {
 								_parent.add(new Text("No more Creations"));
 							}
+							**/
 
 						}
 					});
