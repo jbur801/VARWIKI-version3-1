@@ -190,7 +190,10 @@ public class MainMenuController implements Initializable{
 		URL mediaUrl;
 		try {
 			//find media
-			Text asText = (Text) creationToPlay.getChildren().get(1);
+			Text asText = (Text) creationToPlay.getChildren().get(0);
+			if(asText.getText().contentEquals("Are you sure? ")|asText.getText().contentEquals("No more Creations")) {
+				return;
+			}
 			mediaUrl = new File(System.getProperty("user.dir") + "/bin/VideoCreations/"+asText.getText()+".mp4").toURI().toURL();
 			_lastSelected=creationToPlay;
 			Media media = new Media(mediaUrl.toExternalForm());

@@ -24,15 +24,14 @@ public class VideoBar {
 
 	private ExecutorService _team = Executors.newSingleThreadExecutor(); 
 	private boolean _deleteOption;
-	private String _name;
+	private Text _name;
 	private ObservableList<HBox> _parent;
-	private Button _playButton=new Button("Play");
 	private Button _deleteButton=new Button("delete");
 	private HBox _bar;
 
 
 	public VideoBar(String name, ObservableList<HBox> videoList){
-		_name=name;
+		_name= new Text(name);
 		_parent=videoList;
 
 
@@ -42,7 +41,7 @@ public class VideoBar {
 			public void handle(ActionEvent event) {
 				if(!_deleteOption) {
 					_deleteOption=true;
-					Text confirm = new Text("  |  Are you sure?");
+					Text confirm = new Text("Are you sure? ");
 
 					Button yesButton = new Button("yes");
 					Button noButton = new Button("no");
@@ -50,14 +49,14 @@ public class VideoBar {
 					yesButton.setOnAction(new EventHandler<ActionEvent>() {
 						@Override
 						public void handle(ActionEvent event) {
-							RunBash delete = new RunBash("rm -f ./VideoCreations/"+_name+".mp4");
+							RunBash delete = new RunBash("rm -f ./VideoCreations/"+_name.getText()+".mp4");
 							_team.submit(delete);
 							_parent.remove(_bar);	
-							/**
+							
 							if(_parent.isEmpty()) {
-								_parent.add(new Text("No more Creations"));
+								_parent.add(new HBox(new Text("No more Creations")));
 							}
-							**/
+						
 
 						}
 					});
@@ -65,17 +64,20 @@ public class VideoBar {
 					noButton.setOnAction(new EventHandler<ActionEvent>() {
 						@Override
 						public void handle(ActionEvent event) {
-							_bar.getChildren().removeAll(confirm,yesButton,noButton);						
+							_bar.getChildren().removeAll(confirm,yesButton,noButton);	
+							_bar.getChildren().addAll(_name, _deleteButton);
 							_deleteOption=false;
 						}
 					});
+	
+					_bar.getChildren().removeAll(_name, _deleteButton);
 					_bar.getChildren().addAll(confirm,yesButton,noButton);
 				}
 			}
 		});
 
-		Text text = new Text(_name);
-		_bar = new HBox(_deleteButton,text);
+		
+		_bar = new HBox(_name, _deleteButton);
 		_bar.setSpacing(9);
 		_parent.add(_bar);
 	}
