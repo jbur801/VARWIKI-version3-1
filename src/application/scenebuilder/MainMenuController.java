@@ -198,7 +198,7 @@ public class MainMenuController implements Initializable{
 
 	@FXML
 	void handleBackward(ActionEvent event) {
-		_player.getMediaPlayer().seek( _player.getMediaPlayer().getCurrentTime().add( Duration.seconds(3)));
+		_player.getMediaPlayer().seek( _player.getMediaPlayer().getCurrentTime().add( Duration.seconds(-3)));
 	}
 
 	@FXML
