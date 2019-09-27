@@ -85,42 +85,7 @@ public class MainMenuController implements Initializable{
 
 	@FXML
 	private ListView<HBox> videoListView;
-
-
 	
-	/*
-	 * This initializer block loads all current video creations
-	 */
-	{
-		RunBash bash = new RunBash("List=`ls ./VideoCreations` ; List=${List//.???/} ; printf \"${List// /.\\\\n}\\n\"");
-		_team.submit(bash);
-		bash.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
-			@Override
-			public void handle(WorkerStateEvent event) {
-
-				try {
-					_creations = bash.get();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-
-				if(_creations.get(0).isEmpty()) {
-					
-					Text noCreations = new Text("No Current Creations");
-				
-					_videoList.add(new HBox(noCreations));
-					videoListView.setItems(_videoList);
-					
-				}else {
-					
-					for(String video:_creations) {
-						new VideoBar(video,_videoList);
-					}
-					videoListView.setItems(_videoList);
-				}
-			}
-		});
-	}
 
 	@FXML
 	void handleSlider(ActionEvent event) {
@@ -264,5 +229,37 @@ public class MainMenuController implements Initializable{
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		_state = State.EMPTY;
+		
+		/*
+		 * this loads the current stored videos
+		 */
+		RunBash bash = new RunBash("List=`ls ./VideoCreations` ; List=${List//.???/} ; printf \"${List// /.\\\\n}\\n\"");
+		_team.submit(bash);
+		bash.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+			@Override
+			public void handle(WorkerStateEvent event) {
+
+				try {
+					_creations = bash.get();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+
+				if(_creations.get(0).isEmpty()) {
+					
+					Text noCreations = new Text("No Current Creations");
+				
+					_videoList.add(new HBox(noCreations));
+					videoListView.setItems(_videoList);
+					
+				}else {
+					
+					for(String video:_creations) {
+						new VideoBar(video,_videoList);
+					}
+					videoListView.setItems(_videoList);
+				}
+			}
+		});
 	}
 }

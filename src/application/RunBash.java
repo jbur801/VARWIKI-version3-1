@@ -24,7 +24,7 @@ public class RunBash extends Task<List<String>>{
 	public RunBash(String command){
 		_command = command;
 		_pb = new ProcessBuilder("bash", "-c", _command);
-		
+		System.out.println(command);
 		//sets the working directory of the processbuilder to be in the current folder. There is a problem with open jdk where default wd is home. oracle does not have this problem
 		_pb.directory(new File(ClassLoader.getSystemClassLoader().getResource(".").getPath()));
 	}

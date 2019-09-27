@@ -1,5 +1,7 @@
 package application.scenebuilder;
 
+import java.net.URL;
+import java.util.ResourceBundle;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -24,10 +26,11 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.MediaView;
 import javafx.scene.text.Text;
+import javafx.fxml.Initializable;
 
 import application.*;
 
-public class CreateMenuController {
+public class CreateMenuController implements Initializable {
 
 	private String _term = "";
 	private ExecutorService _team = Executors.newSingleThreadExecutor(); 
@@ -63,7 +66,7 @@ public class CreateMenuController {
     private Button saveButton;
     
     @FXML
-    private ChoiceBox festivalVoice;
+    private ChoiceBox<String> _festivalVoice;
 
     @FXML
     private TextArea displayTextArea;
@@ -84,10 +87,11 @@ public class CreateMenuController {
     /**
      * this initialises choice box to allow for the selection of different festival voices
      */
-    {
+    @Override
+	public void initialize(URL arg0, ResourceBundle arg1) {
     	ObservableList<String> voices = FXCollections.observableArrayList();
     	voices.addAll("Default","(voice_akl_nz_cw_cg_cg)","(voice_akl_nz_jdt_diphone)");
-    	festivalVoice.setItems(voices);
+    	_festivalVoice.setItems(voices);
     }
     
     
@@ -171,7 +175,8 @@ public class CreateMenuController {
 			error("Can only save sections smaller than 20 words");
 		}
 		
-		if(festivalVoice.getSelectionModel().getSelectedItem().contentEquals("Default")) {
+		String voice = _festivalVoice.getSelectionModel().getSelectedItem();
+		if(voice.contentEquals("Default") || voice.isEmpty()) {
 		RunBash audioCreation = new RunBash("echo \"" + selectedText + "\" | text2wave -o ./temp/"+ audioCount + ".wav");
 		_team.submit(audioCreation);
 		_runningThread = true;
@@ -182,7 +187,7 @@ public class CreateMenuController {
 			}
 		});
 		}else {
-			RunBash audioCreation = new RunBash("echo \"" + selectedText + "\" | text2wave -o ./temp/"+ audioCount + ".wav " + "-eval \""+festivalVoice.getSelectionModel().getSelectedItem()+"\"");
+			RunBash audioCreation = new RunBash("echo \"" + selectedText + "\" | text2wave -o ./temp/"+ audioCount + ".wav " + "-eval \""+_festivalVoice.getSelectionModel().getSelectedItem()+"\"");
 			_team.submit(audioCreation);
 			_runningThread = true;
 			audioCreation.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
@@ -249,15 +254,35 @@ public class CreateMenuController {
 		if(selectedText.isEmpty()) {
 			return;
 		}
-		RunBash audioCreation = new RunBash("echo \"" + selectedText + "\" | festival --tts");
+		String voice = _festivalVoice.getSelectionModel().getSelectedItem();
+		if(voice == null || voice.contentEquals("Default")) {
+		_runningThread = true;	
+		RunBash festivalFile = new RunBash( "echo '(SayText \"" +selectedText+"\")' > " +audioCount+".scm");	
+		_team.submit(festivalFile);
+		RunBash audioCreation = new RunBash("festival -b "+ audioCount+".scm");
 		_team.submit(audioCreation);
-		_runningThread = true;
+		
 		audioCreation.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 			@Override
 			public void handle(WorkerStateEvent event) {
 				_runningThread=false;
 			}
 		});
+		}else {
+			_runningThread = true;
+			RunBash festivalFile = new RunBash("echo -e '"+voice+ "\n(SayText \"" +selectedText+"\")' > " +audioCount+".scm");	
+			_team.submit(festivalFile);
+			RunBash audioCreation = new RunBash("festival -b "+ audioCount+".scm");
+			_team.submit(audioCreation);
+		
+			audioCreation.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+				@Override
+				public void handle(WorkerStateEvent event) {
+					_runningThread=false;
+				}
+			});
+			
+		}
 
 	}
 	
