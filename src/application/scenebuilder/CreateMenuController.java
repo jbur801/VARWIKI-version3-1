@@ -6,6 +6,8 @@ import java.util.concurrent.Executors;
 
 import application.AudioBar;
 import application.RunBash;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -17,6 +19,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.MediaView;
 import javafx.scene.text.Text;
@@ -29,6 +32,7 @@ public class CreateMenuController {
 	private ExecutorService _team = Executors.newSingleThreadExecutor(); 
 	private boolean _runningThread;
 	private int audioCount=0;
+	private ObservableList<HBox> _audioList = FXCollections.observableArrayList();
 
 	@FXML
     private AnchorPane Search;
@@ -36,13 +40,23 @@ public class CreateMenuController {
     @FXML
     private TextField searchTextArea;
 
-   
+    @FXML
+    private Button _playButton;
+    
+    @FXML
+    private Button _deleteButton;
     
     @FXML
     private Button _searchButton;
 
     @FXML
     private Button testButton;
+    
+    @FXML
+    private Button _upButton;
+    
+    @FXML
+    private Button _downButton;
 
     @FXML
     private Button saveButton;
@@ -51,7 +65,7 @@ public class CreateMenuController {
     private TextArea displayTextArea;
 
     @FXML
-    private VBox audioBox;
+    private ListView<HBox> audioBox;
 
     @FXML
     private Button createButton;
@@ -74,7 +88,7 @@ public class CreateMenuController {
 		}
 
 		
-		Object[] audioFiles = audioBox.getChildren().toArray();
+		Object[] audioFiles = audioBox.getChildrenUnmodifiable().toArray();
 		String audioFileNames="";
 		for(Object audio:audioFiles) {
 			audioFileNames = audioFileNames+audio.toString();
@@ -146,7 +160,8 @@ public class CreateMenuController {
 				_runningThread=false;
 			}
 		});
-		new AudioBar(selectedText,audioCount+".wav",audioBox);
+		new AudioBar(selectedText,audioCount+".wav",_audioList);
+		audioBox.setItems(_audioList);
 
 	}
 
@@ -213,7 +228,36 @@ public class CreateMenuController {
 		});
 
 	}
-
+	
+	@FXML
+	void handlePlayAudio(ActionEvent event) {
+		HBox audio = audioBox.getSelectionModel().getSelectedItem();
+		((AudioBar) audio).playAudio();
+	}
+	
+	@FXML
+	void handleDeleteAudio(ActionEvent event) {
+		HBox audio = audioBox.getSelectionModel().getSelectedItem();
+		((AudioBar) audio).delete();
+	}
+	
+	@FXML
+	void handleMoveAudioDown(ActionEvent event) {
+		HBox audio = audioBox.getSelectionModel().getSelectedItem();
+		((AudioBar) audio).moveDown();
+	}
+	
+	@FXML
+	void handleMoveAudioUp(ActionEvent event) {
+		HBox audio = audioBox.getSelectionModel().getSelectedItem();
+		((AudioBar) audio).moveUp();
+	}
+	
+	
+	/**
+	 * helper method that creates a popup when an error occurs
+	 * @param msg
+	 */
 	public void error(String msg) {
 		Alert alert = new Alert(AlertType.ERROR);
 		alert.setTitle("ERROR "+msg);

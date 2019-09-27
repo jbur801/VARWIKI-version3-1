@@ -33,8 +33,6 @@ public class VideoBar extends HBox{
 		_name= new Text(name);
 		_parent=videoList;
 
-
-
 		_bar.getChildren().add(_name);
 		_bar.setSpacing(9);
 		_parent.add(_bar);

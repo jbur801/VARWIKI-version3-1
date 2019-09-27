@@ -248,6 +248,10 @@ public class MainMenuController implements Initializable{
 	}
 
 	
+	/**
+	 * universal delete button
+	 * @param event
+	 */
 	@FXML
 	void handleDeleteVideo(ActionEvent event) {
 		HBox selectedItem = videoListView.getSelectionModel().getSelectedItem();

@@ -3,6 +3,7 @@ package application;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javafx.collections.ObservableList;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -23,87 +24,94 @@ public class AudioBar extends HBox{
 	private ExecutorService _team = Executors.newSingleThreadExecutor(); 
 	private boolean _deleteOption;
 	private String _name;
-	private VBox _parent;
-	private Button _playButton=new Button("Play");
-	private Button _deleteButton=new Button("Delete");
-	private Button _upButton=new Button("/\\");
-	private Button _downButton=new Button("\\/");
+	private ObservableList<HBox> _parent;
 	private Text _text;
 	private HBox _bar =this;
 	private static boolean _play=false;
 
-	public AudioBar(String text,String fileName,VBox parent){
+	public AudioBar(String text,String fileName,ObservableList<HBox> parent){
 		_parent=parent;
-		_playButton.setMinWidth(75);
-		_deleteButton.setMinWidth(75);
 		_text= new Text(text);
 		_text.wrappingWidthProperty().set(400);
 		_name=fileName;
-		this.getChildren().addAll(_playButton,_deleteButton,_upButton,_downButton,_text);
+		this.getChildren().addAll(_text);
 		this.setSpacing(2);	
-		_parent.getChildren().add(this);
-		buttonSetup();
+		_parent.add(this);
 
 	}
 
-	public void buttonSetup(){
+	
+	public void delete() {
+		if(!_deleteOption) {
+			_deleteOption=true;
+			Text confirm = new Text("Are you sure? ");
 
-		_playButton.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent event) {	
-				if(_play==true) {
-					return;
-				}
-				_play=true;
+			Button yesButton = new Button("yes");
+			Button noButton = new Button("no");
 
-				RunBash audioCreation = new RunBash("echo \"" + _text.getText() + "\" | festival --tts");
-				_team.submit(audioCreation);
-				audioCreation.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
-					@Override
-					public void handle(WorkerStateEvent event) {
-						_play=false;
+			yesButton.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent event) {
+					_parent.remove(_bar);
 					}
-				});
 
-			}
-		});
-		_deleteButton.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent event) {	
-				_parent.getChildren().remove(_bar);
-			}
-		});
-		_upButton.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent event) {	
-				int position = _parent.getChildren().indexOf(_bar);
-				if(position==0) {
-					return;
-				}
-				Node temp = _parent.getChildren().get(position-1);
-				_parent.getChildren().remove(position-1);
-				_parent.getChildren().remove(position-1);
-				_parent.getChildren().add(position-1,_bar);
-				_parent.getChildren().add(position,temp);
-			}
-		});
-		_downButton.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent event) {	
-				int position = _parent.getChildren().indexOf(_bar);
-				if(position==_parent.getChildren().size()-1) {
-					return;
-				}
-				Node temp = _parent.getChildren().get(position+1);
-				_parent.getChildren().remove(position+1);
-				_parent.getChildren().remove(position);
-				_parent.getChildren().add(position,temp);
-				_parent.getChildren().add(position+1,_bar);
 
-			}
-		});
+		
+			});
+
+			noButton.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent event) {
+					_bar.getChildren().removeAll(confirm,yesButton,noButton);	
+					_bar.getChildren().addAll(_text);
+					_deleteOption=false;
+				}
+			});
+
+			_bar.getChildren().removeAll(_text);
+			_bar.getChildren().addAll(confirm,yesButton,noButton);
+		}
+		
+	}
+	public void moveDown() {
+		int position = _parent.indexOf(_bar);
+		if(position==_parent.size()-1) {
+			return;
+		}
+		HBox temp = _parent.get(position+1);
+		_parent.remove(position+1);
+		_parent.remove(position);
+		_parent.add(position,temp);
+		_parent.add(position+1,_bar);
 	}
 	
+	public void moveUp() {
+		int position = _parent.indexOf(_bar);
+		if(position==0) {
+			return;
+		}
+		HBox temp = _parent.get(position-1);
+		_parent.remove(position-1);
+		_parent.remove(position-1);
+		_parent.add(position-1,_bar);
+		_parent.add(position,temp);
+	}
+	
+	public void playAudio() {
+		if(_play==true) {
+			return;
+		}
+		_play=true;
+
+		RunBash audioCreation = new RunBash("echo \"" + _text.getText() + "\" | festival --tts");
+		_team.submit(audioCreation);
+		audioCreation.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+			@Override
+			public void handle(WorkerStateEvent event) {
+				_play=false;
+			}
+		});
+	}
 	
 	public String toString() {
 		return " ./temp/" + _name;
