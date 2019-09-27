@@ -314,38 +314,25 @@ public class CreateMenuController implements Initializable {
 		}
 		String voice = _festivalVoice.getSelectionModel().getSelectedItem();
 		if(voice == null ||voice.contentEquals("Default")) {
-
-			RunBash audioCreation = new RunBash("echo \"" + selectedText + "\" | text2wave -o ./resources/temp/"+ audioCount + ".wav");
+		
+			RunBash audioCreation = new RunBash("echo \"" + selectedText + "\" | festival --tts");
 			_team.submit(audioCreation);
 			_runningThread = true;
 			audioCreation.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 				@Override
 				public void handle(WorkerStateEvent event) {
-					RunBash playAudio = new RunBash("play ./resources/temp/"+audioCount+".wav");
-					_team.submit(playAudio);
-					playAudio.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
-						@Override
-						public void handle(WorkerStateEvent event) {
-							_runningThread=false;
-						}
-					});
+					_runningThread=false;
 				}
 			});
+			
 		}else {
-			RunBash audioCreation = new RunBash("echo \"" + selectedText + "\" | text2wave -o ./resources/temp/"+ audioCount + ".wav " + "-eval \""+_festivalVoice.getSelectionModel().getSelectedItem()+"\"");
+			RunBash audioCreation = new RunBash("echo {\""+voice+"\",'(SayText \""+selectedText+"\")'} | bash -c festival");
 			_team.submit(audioCreation);
 			_runningThread = true;
 			audioCreation.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 				@Override
 				public void handle(WorkerStateEvent event) {
-					RunBash playAudio = new RunBash("play ./resources/temp/"+audioCount+".wav");
-					_team.submit(playAudio);
-					playAudio.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
-						@Override
-						public void handle(WorkerStateEvent event) {
-							_runningThread=false;
-						}
-					});
+					_runningThread=false;
 				}
 			});
 		}
