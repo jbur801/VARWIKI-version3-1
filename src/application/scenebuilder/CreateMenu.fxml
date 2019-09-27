@@ -10,10 +10,10 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Text?>
 
-<AnchorPane fx:id="Search" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.scenebuilder.CreateMenuController">
+<AnchorPane fx:id="Search" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.scenebuilder.CreateMenuController">
    <children>
       <TextField fx:id="searchTextArea" layoutX="14.0" layoutY="74.0" />
-      <Button fx:id="searchButton" layoutX="16.0" layoutY="475.0" mnemonicParsing="false" onAction="#handleSearch" text="Modify display" />
+      <Button layoutX="16.0" layoutY="475.0" mnemonicParsing="false" onAction="#handleImages" text="Modify display" />
       <Text layoutX="14.0" layoutY="48.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Please Enter a Term to Search" />
       <Button fx:id="testButton" layoutX="14.0" layoutY="195.0" mnemonicParsing="false" onAction="#handleTestAudio" text="Test Audio" />
       <Button fx:id="saveButton" layoutX="14.0" layoutY="231.0" mnemonicParsing="false" onAction="#handleSaveAudio" text="Save Audio" />
@@ -22,7 +22,7 @@
       <Text layoutX="315.0" layoutY="48.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Highlight Text you want to be saved as audio:" wrappingWidth="325.8701171875" />
       <Button fx:id="createButton" layoutX="16.0" layoutY="518.0" mnemonicParsing="false" onAction="#handleCreate" text="Finish" />
       <Text layoutX="16.0" layoutY="336.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Creation Audio will be merged according to the order on the right" wrappingWidth="150.0" />
-      <Button fx:id="returnButton" layoutX="14.0" layoutY="553.0" mnemonicParsing="false" onAction="#handleReturn" text="Return to Menu" />
+      <Button fx:id="returnButton" cancelButton="true" layoutX="14.0" layoutY="553.0" mnemonicParsing="false" onAction="#handleReturn" text="Return to Menu" />
       <ScrollPane hbarPolicy="NEVER" layoutX="233.0" layoutY="323.0" prefHeight="230.0" prefWidth="553.0">
          <content>
             <ListView fx:id="audioBox" prefHeight="229.0" prefWidth="552.0" />
@@ -30,9 +30,9 @@
       </ScrollPane>
       <TextField fx:id="videoName" layoutX="11.0" layoutY="402.0" prefHeight="26.0" prefWidth="160.0" />
       <Text layoutX="16.0" layoutY="393.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Name:" />
-      <CheckBox layoutX="84.0" layoutY="522.0" mnemonicParsing="false" text="Include Images" />
+      <CheckBox fx:id="_images" layoutX="84.0" layoutY="522.0" mnemonicParsing="false" selected="true" text="Include Images" />
       <Button fx:id="_playButton" layoutX="233.0" layoutY="560.0" mnemonicParsing="false" onAction="#handlePlayAudio" text="Play" />
-      <Button fx:id="_searchButton" layoutX="16.0" layoutY="109.0" mnemonicParsing="false" onAction="#handleSearch" text="Search" />
+      <Button fx:id="_searchButton" defaultButton="true" layoutX="16.0" layoutY="109.0" mnemonicParsing="false" onAction="#handleSearch" text="Search" />
       <Button fx:id="_deleteButton" layoutX="285.0" layoutY="560.0" mnemonicParsing="false" onAction="#handleDeleteAudio" text="Delete" />
       <Button fx:id="_downButton" layoutX="423.0" layoutY="560.0" mnemonicParsing="false" onAction="#handleMoveAudioDown" text="Down" />
       <Button fx:id="_upButton" layoutX="382.0" layoutY="560.0" mnemonicParsing="false" onAction="#handleMoveAudioUp" text="Up" />
