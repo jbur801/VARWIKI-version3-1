@@ -39,24 +39,24 @@ import application.*;
 
 public class CreateMenuController implements Initializable {
 
-	
-	
+
+
 	private ObservableList<HBox> _audioList = FXCollections.observableArrayList();
 	private String _term = "";
 	private ExecutorService _team = Executors.newSingleThreadExecutor(); 
 	private boolean _runningThread;
 	private int audioCount=0;
 	private SetImagesController _controller;
-	
+
 	@FXML
 	private Button _playButton;
 
 	@FXML
 	private TextField searchTextArea;
-	
+
 	@FXML
 	private Button _imageButton;
-	
+
 	@FXML
 	private Button _deleteButton;
 
@@ -68,39 +68,40 @@ public class CreateMenuController implements Initializable {
 
 	@FXML
 	private Button _downButton;
-    
-    @FXML
-    private Button _searchButton;
-    
-    @FXML 
-    private CheckBox _images;
 
-    @FXML
-    private Button testButton;
+	@FXML
+	private Button _searchButton;
 
-    @FXML
-    private Button saveButton;
+	@FXML 
+	private CheckBox _images;
 
-    @FXML
-    private TextArea displayTextArea;
-    
+	@FXML
+	private Button testButton;
+
+	@FXML
+	private Button saveButton;
+
+	@FXML
+	private TextArea displayTextArea;
+
 	@FXML
 	private ChoiceBox<String> _festivalVoice;
 
-    @FXML
-    private Button createButton;
+	@FXML
+	private Button createButton;
 
-    @FXML
-    private Button returnButton;
+	@FXML
+	private Button returnButton;
 
-    @FXML
-    private TextField videoName;
+	@FXML
+	private TextField videoName;
 	private boolean _manual;
+	private Scene _scene;
 
 	/**
 	 * this initialises choice box to allow for the selection of different festival voices
 	 */
-    
+
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		ObservableList<String> voices = FXCollections.observableArrayList();
@@ -108,7 +109,7 @@ public class CreateMenuController implements Initializable {
 		_festivalVoice.setItems(voices);
 		_manual=false;
 	}
-    
+
 	@FXML
 	void handleCreate() {
 		if(_runningThread) {
@@ -116,11 +117,11 @@ public class CreateMenuController implements Initializable {
 		}
 		String name = videoName.getText();
 		if(name.isEmpty()) {
-			error("Please enter a name for your creation");
+			error("Creation must have a name");
 			return;
 		}
 
-		
+
 		//this whole thing was wrong before, you were calling toString on a HBox object, and it was giving gibberish, I tried to hack this fixed for testing 
 		//image creation but I gave up and am currently just testing with some generic audio.
 		//you are probably gonna wanna typecast at some point to get your class back, although im not even sure the info you are looking for is still in the audiobox
@@ -133,7 +134,7 @@ public class CreateMenuController implements Initializable {
 			Text text = (Text)box.getChildren().get(0);
 			audioFileNames = audioFileNames+text.getText();
 		}		
-		
+
 		RunBash mergeAudio = new RunBash("sox "+ audioFileNames +" ./resources/temp/output.wav");
 		_team.submit(mergeAudio);	
 		mergeAudio.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
@@ -156,7 +157,7 @@ public class CreateMenuController implements Initializable {
 									+ "fontcolor=white:x=(w-text_w)/2:y=(h-text_h)/2:text="+_term+"\" ./resources/temp/"+name+".mp4 &> /dev/null "
 									+ "; ffmpeg -i ./resources/temp/"+name +".mp4 -i ./resources/temp/output.mp3 -c:v copy -c:a aac -strict experimental "
 									+ "./resources/VideoCreations/"+name+".mp4  &> /dev/null");
-							
+
 							_team.submit(createVideo);
 							_runningThread = true;
 							createVideo.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
@@ -176,15 +177,33 @@ public class CreateMenuController implements Initializable {
 			}
 		});
 	}
-	
+
 	@FXML
 	void handleReturn() {
 		Main.changeScene("MainMenu.fxml", this);
 	}
 
+	private void initializeSetImages() {
+		FXMLLoader loader = new FXMLLoader();
+
+		loader.setLocation(getClass().getResource("SetImages.fxml"));
+		Parent layout; 
+		try {
+			_controller=loader.getController();
+			layout = loader.load();
+			_scene = new Scene(layout);
+
+			_manual = true;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
 	@FXML
 	void handleImages() {
-		//yeap i did it
+		//yeap i really did it
 		if(_searchButton.isVisible()==true) {
 			error("please search for a subject first");
 			return;
@@ -192,26 +211,18 @@ public class CreateMenuController implements Initializable {
 			error("busy");
 			return;
 		}
-		
-		 FXMLLoader loader = new FXMLLoader();
-		 Stage imageStage = new Stage();
-	        loader.setLocation(getClass().getResource("SetImages.fxml"));
-	        Parent layout; 
-			try {
-				_controller=loader.getController();
-				layout = loader.load();
-		        Scene scene = new Scene(layout);
-		        imageStage.setScene(scene);
-		        imageStage.show();
-				_manual = true;
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-	
+		if (_controller==null) {
+			initializeSetImages();
+		}
+		popupSetImages();
 	}
-	
+
+	private void popupSetImages() {
+		Stage imageStage = new Stage();
+		imageStage.setScene(_scene);
+		imageStage.show();
+	}
+
 	@FXML
 	void handleSaveAudio(ActionEvent event) {
 		audioCount++;
@@ -280,7 +291,7 @@ public class CreateMenuController implements Initializable {
 						error("search term not found");
 					}
 					_searchButton.setText("search");
-					
+
 					displayTextArea.setText(text);
 					searchTextArea.setEditable(false);
 					_searchButton.setVisible(false);
@@ -301,7 +312,7 @@ public class CreateMenuController implements Initializable {
 		});
 
 	}
-	
+
 	@FXML
 	void handleTestAudio(ActionEvent event) {
 		String selectedText = displayTextArea.getSelectedText();
@@ -310,7 +321,7 @@ public class CreateMenuController implements Initializable {
 		}
 		String voice = _festivalVoice.getSelectionModel().getSelectedItem();
 		if(voice == null ||voice.contentEquals("Default")) {
-			
+
 			RunBash audioCreation = new RunBash("echo \"" + selectedText + "\" | text2wave -o ./resources/temp/"+ audioCount + ".wav");
 			_team.submit(audioCreation);
 			_runningThread = true;
