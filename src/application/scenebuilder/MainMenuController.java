@@ -34,10 +34,6 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import application.*;
 
-/**
- * 
- *
- */
 public class MainMenuController implements Initializable{
 
 
@@ -49,24 +45,19 @@ public class MainMenuController implements Initializable{
 		PAUSED,
 		FINISHED
 	};
+	
+	private ObservableList<HBox> _videoList = FXCollections.observableArrayList();
 
 	private HBox _lastSelected;
 	private State _state = State.EMPTY;
-	private boolean _muted = false;
-	private ObservableList<HBox> _videoList = FXCollections.observableArrayList();
-	
-	
-	@FXML
-	private Text videoTime;
-	
 	@FXML
 	private Button createButton;
-	
-	@FXML
-	private Button _deleteButton;
-	
+
 	@FXML 
 	private Slider _slider;
+
+	@FXML
+	private VBox videoBox;
 
 	@FXML
 	private MediaView _player;
@@ -85,82 +76,94 @@ public class MainMenuController implements Initializable{
 
 	@FXML
 	private ListView<HBox> videoListView;
-	
+	private boolean _muted = false;
 
 	@FXML
 	void handleSlider(ActionEvent event) {
-		
-	}
-	
 
-	/*
-	 * fastforwards the current video
-	 */
+	}
+
 	@FXML
 	void handleForward(ActionEvent event) {
-		_player.getMediaPlayer().seek( _player.getMediaPlayer().getCurrentTime().add( Duration.seconds(3)) );
+		List<HBox> creations =  videoListView.getItems();
+		int i = creations.indexOf(_lastSelected)+1;
+		if (i>=creations.size()) {
+			i=0;
+		}
+		setup(creations.get(i));
 	}
 
 	@FXML
 	void handleMute(ActionEvent event) {
 		if(existingPlayer()) {
-		_muted=!_muted;
-		_player.getMediaPlayer().setMute(_muted);
+			_muted=!_muted;
+			_player.getMediaPlayer().setMute(_muted);
 		}
 	}
 
 
 	private boolean existingPlayer() {
-		
+
 		return _player.getMediaPlayer()!=null;
 	}
 
 	@FXML
-	void handleVideoMultiButton(ActionEvent event) {
+	void handleSelectionChange() {
 		HBox currentSelection = (HBox) videoListView.getSelectionModel().getSelectedItem();
-		if(currentSelection == null){
-			currentSelection = videoListView.getItems().get(0);
-		}
-		switch (_state) {
-		case EMPTY:
-			play(currentSelection);
-			break;
-		case PLAYING:
-			_multiButton.setText("Play");
-			_player.getMediaPlayer().pause();
-			_state=State.PAUSED;
-			break;
-		case PAUSED:
-			if(_lastSelected==null) {
-				//can fix if you care to
-				_lastSelected = currentSelection;
-			}
-			
-			if(currentSelection.equals(_lastSelected)){
-				_multiButton.setText("Pause");
-				_player.getMediaPlayer().play();
-				_state=State.PLAYING;
-			}else {
-				_state=State.EMPTY;
-				handleVideoMultiButton(event);
-			}
-			break;
-		case FINISHED:
-			
-			if(currentSelection.equals(_lastSelected)){
-				_multiButton.setText("Pause");
-				//I think this might need smth else
-				_player.getMediaPlayer().play();
-				_state=State.PLAYING;
-			}else {
-				_state=State.EMPTY;
-				handleVideoMultiButton(event);
-			}
-
-		}
+		setup(currentSelection);	
 	}
 
-	private void play(HBox creationToPlay) {
+	@FXML
+	void handleVideoMultiButton() {		
+		switch (_state) {
+		case EMPTY:
+			setup(videoListView.getItems().get(0));
+			play();
+			break;
+		case PLAYING:
+			pause();
+			break;
+		case PAUSED:
+			play();
+			break;
+		case FINISHED:
+			//todo: needs a real implementation, this currently does nothing
+			//_player.getMediaPlayer().setOnEndOfMedia(Runnable);
+
+			play();
+			break;
+		}
+
+	}
+
+	private void pause() {
+		_multiButton.setText("Play");
+		Duration time=_player.getMediaPlayer().getCurrentTime();
+		_player.getMediaPlayer().stop();
+		_player.getMediaPlayer().setStartTime(time);
+		_state=State.PAUSED;
+
+	}
+
+	class countTime extends Task <Void>{
+
+		@Override
+		protected Void call() throws Exception {
+
+			//updateProgress(1,Main.getDuration());
+			return null;
+
+		}
+
+	}
+
+	private void play() {
+		_player.getMediaPlayer().play();
+		_multiButton.setText("Pause");
+		_state= State.PLAYING;
+	}
+
+	private void setup(HBox creationToPlay) {
 		if(existingPlayer()) {
 			_player.getMediaPlayer().dispose();
 		}
@@ -171,40 +174,40 @@ public class MainMenuController implements Initializable{
 			if(asText.getText().contentEquals("Are you sure? ")|asText.getText().contentEquals("No more Creations")) {
 				return;
 			}
-			mediaUrl = new File(System.getProperty("user.dir") + "/bin/VideoCreations/"+asText.getText()+".mp4").toURI().toURL();
+			mediaUrl = new File(Main.getPathToResources() + "/VideoCreations/"+asText.getText()+".mp4").toURI().toURL();
 			_lastSelected=creationToPlay;
 			Media media = new Media(mediaUrl.toExternalForm());
 			//Create the player and set to play.
 			MediaPlayer mediaPlayer = new MediaPlayer(media);
+			mediaPlayer.setAutoPlay(false);
 			_player.setMediaPlayer(mediaPlayer);
 			_player.getMediaPlayer().setMute(_muted);
-			mediaPlayer.play();
-			/**
-		 //this needs to be done
-		Runnable finished = new Task() {
-			@Override
-			protected List<String> call() throws Exception {
-			List <String> out=new ArrayList<String>();
-			out.add("done");
-				return out;
-			}
 
-		};
-		mediaPlayer.setOnEndOfMedia(finished);
-			 **/
-			//mediaPlayer.setOnReady(arg0);;
-			_multiButton.setText("Pause");
-			_state= State.PLAYING;
+			Duration time=_player.getMediaPlayer().getCurrentTime();
+			Duration totalDuration = _player.getMediaPlayer().getTotalDuration();
+			_multiButton.setText("Play");
+			_state= State.PAUSED;
+			_player.getMediaPlayer().setOnEndOfMedia(new RunBash("") {
+
+			});
+			//_slider.valueProperty().bind(task);
+
+			//_player.getMediaPlayer().setStartTime(arg0);
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 	}
 
 	@FXML
 	void handleBackward(ActionEvent event) {
-		_player.getMediaPlayer().seek( _player.getMediaPlayer().getCurrentTime().add( Duration.seconds(-3)) );
+		List<HBox> creations =  videoListView.getItems();
+		int i = creations.indexOf(_lastSelected)-1;
+		if (i<0) {
+			i=creations.size()-1;
+		}
+		setup(creations.get(i));
 	}
 
 	@FXML
@@ -212,7 +215,6 @@ public class MainMenuController implements Initializable{
 		Main.changeScene("CreateMenu.fxml", this);
 	}
 
-	
 	/**
 	 * universal delete button
 	 * @param event
@@ -225,15 +227,17 @@ public class MainMenuController implements Initializable{
 		}
 	}
 
+
 	//maybe unnecessary
+
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		_state = State.EMPTY;
-		
+
 		/*
 		 * this loads the current stored videos
 		 */
-		RunBash bash = new RunBash("List=`ls ./VideoCreations` ; List=${List//.???/} ; printf \"${List// /.\\\\n}\\n\"");
+		RunBash bash = new RunBash("List=`ls ./resources/VideoCreations` ; List=${List//.???/} ; printf \"${List// /.\\\\n}\\n\"");
 		_team.submit(bash);
 		bash.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 			@Override
@@ -241,19 +245,24 @@ public class MainMenuController implements Initializable{
 
 				try {
 					_creations = bash.get();
+					
+						for(String image:_creations) {
+						System.out.println(image);
+						}
+				
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 
 				if(_creations.get(0).isEmpty()) {
-					
+
 					Text noCreations = new Text("No Current Creations");
-				
+
 					_videoList.add(new HBox(noCreations));
 					videoListView.setItems(_videoList);
-					
+
 				}else {
-					
+
 					for(String video:_creations) {
 						new VideoBar(video,_videoList);
 					}

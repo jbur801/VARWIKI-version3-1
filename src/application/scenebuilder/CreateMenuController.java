@@ -1,6 +1,8 @@
 package application.scenebuilder;
 
+import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -14,8 +16,14 @@ import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
@@ -26,35 +34,34 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.MediaView;
 import javafx.scene.text.Text;
-import javafx.fxml.Initializable;
-
+import javafx.stage.Stage;
 import application.*;
 
 public class CreateMenuController implements Initializable {
 
+
+
+	private ObservableList<HBox> _audioList = FXCollections.observableArrayList();
 	private String _term = "";
 	private ExecutorService _team = Executors.newSingleThreadExecutor(); 
 	private boolean _runningThread;
 	private int audioCount=0;
-	private ObservableList<HBox> _audioList = FXCollections.observableArrayList();
-
-	@FXML
-	private AnchorPane Search;
-
-	@FXML
-	private TextField searchTextArea;
+	private SetImagesController _controller;
 
 	@FXML
 	private Button _playButton;
 
 	@FXML
+	private TextField searchTextArea;
+
+	@FXML
+	private Button _imageButton;
+
+	@FXML
 	private Button _deleteButton;
 
 	@FXML
-	private Button _searchButton;
-
-	@FXML
-	private Button testButton;
+	private ListView<HBox> audioBox;
 
 	@FXML
 	private Button _upButton;
@@ -63,16 +70,22 @@ public class CreateMenuController implements Initializable {
 	private Button _downButton;
 
 	@FXML
-	private Button saveButton;
+	private Button _searchButton;
+
+	@FXML 
+	private CheckBox _images;
 
 	@FXML
-	private ChoiceBox<String> _festivalVoice;
+	private Button testButton;
+
+	@FXML
+	private Button saveButton;
 
 	@FXML
 	private TextArea displayTextArea;
 
 	@FXML
-	private ListView<HBox> audioBox;
+	private ChoiceBox<String> _festivalVoice;
 
 	@FXML
 	private Button createButton;
@@ -82,18 +95,20 @@ public class CreateMenuController implements Initializable {
 
 	@FXML
 	private TextField videoName;
-
+	private boolean _manual;
+	private Scene _scene;
 
 	/**
 	 * this initialises choice box to allow for the selection of different festival voices
 	 */
+
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		ObservableList<String> voices = FXCollections.observableArrayList();
 		voices.addAll("Default","(voice_akl_nz_cw_cg_cg)","(voice_akl_nz_jdt_diphone)");
 		_festivalVoice.setItems(voices);
+		_manual=false;
 	}
-
 
 	@FXML
 	void handleCreate() {
@@ -102,24 +117,30 @@ public class CreateMenuController implements Initializable {
 		}
 		String name = videoName.getText();
 		if(name.isEmpty()) {
-			error("Please enter a name for your creation");
+			error("Creation must have a name");
 			return;
 		}
 
 
-		Object[] audioFiles = audioBox.getChildrenUnmodifiable().toArray();
+		//this whole thing was wrong before, you were calling toString on a HBox object, and it was giving gibberish, I tried to hack this fixed for testing 
+		//image creation but I gave up and am currently just testing with some generic audio.
+		//you are probably gonna wanna typecast at some point to get your class back, although im not even sure the info you are looking for is still in the audiobox
+		//you might actually wanna go retrieve the audio files from the file system with bash.
+		//--------------------------------------------------------------------------------
+		ObservableList <Node> audioFiles = audioBox.getChildrenUnmodifiable();
 		String audioFileNames="";
-		for(Object audio:audioFiles) {
-			audioFileNames = audioFileNames+audio.toString();
-		}
+		for(Node audio:audioFiles) {
+			HBox box =(HBox) audio;
+			Text text = (Text)box.getChildren().get(0);
+			audioFileNames = audioFileNames+text.getText();
+		}		
 
-		System.out.println(audioFileNames);
-		RunBash mergeAudio = new RunBash("sox "+ audioFileNames +" ./temp/output.wav");
+		RunBash mergeAudio = new RunBash("sox "+ audioFileNames +" ./resources/temp/output.wav");
 		_team.submit(mergeAudio);	
 		mergeAudio.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 			@Override
 			public void handle(WorkerStateEvent event) {
-				RunBash audioLengthSoxi = new RunBash("soxi -D ./temp/output.wav");
+				RunBash audioLengthSoxi = new RunBash("soxi -D ./resources/temp/output.wav");
 				_team.submit(audioLengthSoxi);
 				_runningThread = true;
 				audioLengthSoxi.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
@@ -130,12 +151,13 @@ public class CreateMenuController implements Initializable {
 
 						try {
 							audioLength = Double.parseDouble(audioLengthSoxi.get().get(0));
-							RunBash createVideo = new RunBash("ffmpeg -i ./temp/output.wav -vn -ar 44100 -ac 2 -b:a 192k ./temp/output.mp3 &> /dev/null "
+							RunBash createVideo = new RunBash("ffmpeg -i ./resources/temp/output.wav -vn -ar 44100 -ac 2 -b:a 192k ./resources/temp/output.mp3 &> /dev/null "
 									+ "; ffmpeg -f lavfi -i color=c=blue:s=320x240:d="+audioLength 
 									+ " -vf \"drawtext=fontfile=/path/to/font.ttf:fontsize=30: "
-									+ "fontcolor=white:x=(w-text_w)/2:y=(h-text_h)/2:text="+_term+"\" ./temp/"+name+".mp4 &> /dev/null "
-									+ "; ffmpeg -i ./temp/"+name +".mp4 -i ./temp/output.mp3 -c:v copy -c:a aac -strict experimental "
-									+ "./VideoCreations/"+name+".mp4  &> /dev/null");
+									+ "fontcolor=white:x=(w-text_w)/2:y=(h-text_h)/2:text="+_term+"\" ./resources/temp/"+name+".mp4 &> /dev/null "
+									+ "; ffmpeg -i ./resources/temp/"+name +".mp4 -i ./resources/temp/output.mp3 -c:v copy -c:a aac -strict experimental "
+									+ "./resources/VideoCreations/"+name+".mp4  &> /dev/null");
+
 							_team.submit(createVideo);
 							_runningThread = true;
 							createVideo.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
@@ -161,7 +183,45 @@ public class CreateMenuController implements Initializable {
 		Main.changeScene("MainMenu.fxml", this);
 	}
 
+	private void initializeSetImages() {
+		FXMLLoader loader = new FXMLLoader();
 
+		loader.setLocation(getClass().getResource("SetImages.fxml"));
+		Parent layout; 
+		try {
+			_controller=loader.getController();
+			layout = loader.load();
+			_scene = new Scene(layout);
+
+			_manual = true;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
+	@FXML
+	void handleImages() {
+		//yeap i really did it
+		if(_searchButton.isVisible()==true) {
+			error("please search for a subject first");
+			return;
+		} else if (_runningThread) {
+			error("busy");
+			return;
+		}
+		if (_controller==null) {
+			initializeSetImages();
+		}
+		popupSetImages();
+	}
+
+	private void popupSetImages() {
+		Stage imageStage = new Stage();
+		imageStage.setScene(_scene);
+		imageStage.show();
+	}
 
 	@FXML
 	void handleSaveAudio(ActionEvent event) {
@@ -174,10 +234,11 @@ public class CreateMenuController implements Initializable {
 		}else if(wordCount.length>20) {
 			error("Can only save sections smaller than 20 words");
 		}
-
 		String voice = _festivalVoice.getSelectionModel().getSelectedItem();
+
 		if( voice ==null || voice.contentEquals("Default") ) {
-			RunBash audioCreation = new RunBash("echo \"" + selectedText + "\" | text2wave -o ./temp/"+ audioCount + ".wav");
+			RunBash audioCreation = new RunBash("echo \"" + selectedText + "\" | text2wave -o ./resources/temp/"+ audioCount + ".wav");
+
 			_team.submit(audioCreation);
 			_runningThread = true;
 			audioCreation.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
@@ -187,7 +248,7 @@ public class CreateMenuController implements Initializable {
 				}
 			});
 		}else {
-			RunBash audioCreation = new RunBash("echo \"" + selectedText + "\" | text2wave -o ./temp/"+ audioCount + ".wav " + "-eval \""+_festivalVoice.getSelectionModel().getSelectedItem()+"\"");
+			RunBash audioCreation = new RunBash("echo \"" + selectedText + "\" | text2wave -o ./resources/temp/"+ audioCount + ".wav " + "-eval \""+_festivalVoice.getSelectionModel().getSelectedItem()+"\"");
 			_team.submit(audioCreation);
 			_runningThread = true;
 			audioCreation.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
@@ -199,7 +260,6 @@ public class CreateMenuController implements Initializable {
 		}
 		new AudioBar(selectedText,audioCount+"",_audioList);
 		audioBox.setItems(_audioList);
-
 	}
 
 	@FXML
@@ -223,7 +283,6 @@ public class CreateMenuController implements Initializable {
 		command.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 			@Override
 			public void handle(WorkerStateEvent event) {
-				_runningThread=false;
 				String text;
 
 
@@ -237,7 +296,16 @@ public class CreateMenuController implements Initializable {
 
 					displayTextArea.setText(text);
 					searchTextArea.setEditable(false);
-					_searchButton.setVisible(false);;
+					_searchButton.setVisible(false);
+					videoName.setText(_term);
+					GetFlickr imageDown = new GetFlickr(searchTextArea.getText(), 9);
+					_team.submit(imageDown);
+					imageDown.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+						@Override
+						public void handle(WorkerStateEvent event) {
+							_runningThread = false;
+						}
+					});
 				} catch (InterruptedException | ExecutionException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -249,22 +317,20 @@ public class CreateMenuController implements Initializable {
 
 	@FXML
 	void handleTestAudio(ActionEvent event) {
-		System.out.println(displayTextArea.getSelectedText());
 		String selectedText = displayTextArea.getSelectedText();
 		if(selectedText.isEmpty() || _runningThread) {
 			return;
 		}
-
-
 		String voice = _festivalVoice.getSelectionModel().getSelectedItem();
 		if(voice == null ||voice.contentEquals("Default")) {
-			RunBash audioCreation = new RunBash("echo \"" + selectedText + "\" | text2wave -o ./temp/"+ audioCount + ".wav");
+
+			RunBash audioCreation = new RunBash("echo \"" + selectedText + "\" | text2wave -o ./resources/temp/"+ audioCount + ".wav");
 			_team.submit(audioCreation);
 			_runningThread = true;
 			audioCreation.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 				@Override
 				public void handle(WorkerStateEvent event) {
-					RunBash playAudio = new RunBash("play ./temp/"+audioCount+".wav");
+					RunBash playAudio = new RunBash("play ./resources/temp/"+audioCount+".wav");
 					_team.submit(playAudio);
 					playAudio.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 						@Override
@@ -275,13 +341,13 @@ public class CreateMenuController implements Initializable {
 				}
 			});
 		}else {
-			RunBash audioCreation = new RunBash("echo \"" + selectedText + "\" | text2wave -o ./temp/"+ audioCount + ".wav " + "-eval \""+_festivalVoice.getSelectionModel().getSelectedItem()+"\"");
+			RunBash audioCreation = new RunBash("echo \"" + selectedText + "\" | text2wave -o ./resources/temp/"+ audioCount + ".wav " + "-eval \""+_festivalVoice.getSelectionModel().getSelectedItem()+"\"");
 			_team.submit(audioCreation);
 			_runningThread = true;
 			audioCreation.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 				@Override
 				public void handle(WorkerStateEvent event) {
-					RunBash playAudio = new RunBash("play ./temp/"+audioCount+".wav");
+					RunBash playAudio = new RunBash("play ./resources/temp/"+audioCount+".wav");
 					_team.submit(playAudio);
 					playAudio.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 						@Override

@@ -37,6 +37,8 @@ public class VideoBar extends HBox{
 		_bar.setSpacing(9);
 		_parent.add(_bar);
 	}
+	
+	
 
 	public void delete() {
 		if(!_deleteOption) {
@@ -76,4 +78,5 @@ public class VideoBar extends HBox{
 	}
 
 }
+
 
