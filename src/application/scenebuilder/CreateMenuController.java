@@ -120,19 +120,9 @@ public class CreateMenuController implements Initializable {
 			error("Creation must have a name");
 			return;
 		}
-
-
-		//this whole thing was wrong before, you were calling toString on a HBox object, and it was giving gibberish, I tried to hack this fixed for testing 
-		//image creation but I gave up and am currently just testing with some generic audio.
-		//you are probably gonna wanna typecast at some point to get your class back, although im not even sure the info you are looking for is still in the audiobox
-		//you might actually wanna go retrieve the audio files from the file system with bash.
-		//--------------------------------------------------------------------------------
-		ObservableList <Node> audioFiles = audioBox.getChildrenUnmodifiable();
 		String audioFileNames="";
-		for(Node audio:audioFiles) {
-			HBox box =(HBox) audio;
-			Text text = (Text)box.getChildren().get(0);
-			audioFileNames = audioFileNames+text.getText();
+		for(Node audio:_audioList) {
+			audioFileNames = audioFileNames+audio.toString();
 		}		
 
 		RunBash mergeAudio = new RunBash("sox "+ audioFileNames +" ./resources/temp/output.wav");
@@ -233,6 +223,7 @@ public class CreateMenuController implements Initializable {
 			return;
 		}else if(wordCount.length>20) {
 			error("Can only save sections smaller than 20 words");
+			return;
 		}
 		String voice = _festivalVoice.getSelectionModel().getSelectedItem();
 
