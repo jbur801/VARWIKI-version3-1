@@ -52,17 +52,21 @@ public class MainMenuController implements Initializable{
 
 	private HBox _lastSelected;
 	private State _state = State.EMPTY;
+	private boolean _muted = false;
+	private ObservableList<HBox> _videoList = FXCollections.observableArrayList();
 	
 	
+	@FXML
+	private Text videoTime;
 	
 	@FXML
 	private Button createButton;
 	
+	@FXML
+	private Button _deleteButton;
+	
 	@FXML 
 	private Slider _slider;
-
-	@FXML
-	private VBox videoBox;
 
 	@FXML
 	private MediaView _player;
@@ -81,7 +85,7 @@ public class MainMenuController implements Initializable{
 
 	@FXML
 	private ListView<HBox> videoListView;
-	private boolean _muted = false;
+
 
 	
 	/*
@@ -103,16 +107,16 @@ public class MainMenuController implements Initializable{
 				if(_creations.get(0).isEmpty()) {
 					
 					Text noCreations = new Text("No Current Creations");
-					ObservableList<HBox> noList = FXCollections.observableArrayList();
-					noList.add(new HBox(noCreations));
-					videoListView.setItems(noList);
+				
+					_videoList.add(new HBox(noCreations));
+					videoListView.setItems(_videoList);
 					
 				}else {
-					ObservableList<HBox> videoList = FXCollections.observableArrayList();
+					
 					for(String video:_creations) {
-						new VideoBar(video,videoList);
+						new VideoBar(video,_videoList);
 					}
-					videoListView.setItems(videoList);
+					videoListView.setItems(_videoList);
 				}
 			}
 		});
@@ -243,6 +247,14 @@ public class MainMenuController implements Initializable{
 		Main.changeScene("CreateMenu.fxml", this);
 	}
 
+	
+	@FXML
+	void handleDeleteVideo(ActionEvent event) {
+		HBox selectedItem = videoListView.getSelectionModel().getSelectedItem();
+		if(selectedItem instanceof VideoBar) {
+			((VideoBar) selectedItem).delete();
+		}
+	}
 
 	//maybe unnecessary
 	@Override

@@ -32,6 +32,8 @@
             <MediaView fx:id="_player" fitHeight="200.0" fitWidth="200.0" layoutX="94.0" layoutY="63.0" />
             <Label fx:id="_currentLabel" layoutX="77.0" layoutY="36.0" text="Currently Playing:" />
             <Slider fx:id="_slider" layoutX="94.0" layoutY="247.0" prefHeight="16.0" prefWidth="200.0" />
+            <Text fx:id="videoTime" layoutX="180.0" layoutY="297.0" strokeType="OUTSIDE" strokeWidth="0.0" text="00:00" />
          </children></AnchorPane>
+      <Button fx:id="_deleteButton" layoutX="19.0" layoutY="546.0" mnemonicParsing="false" onAction="#handleDeleteVideo" text="Delete" />
    </children>
 </AnchorPane>
