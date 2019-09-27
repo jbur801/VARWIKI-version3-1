@@ -14,6 +14,7 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -60,6 +61,9 @@ public class CreateMenuController {
 
     @FXML
     private Button saveButton;
+    
+    @FXML
+    private ChoiceBox festivalVoice;
 
     @FXML
     private TextArea displayTextArea;
@@ -75,6 +79,17 @@ public class CreateMenuController {
 
     @FXML
     private TextField videoName;
+    
+    
+    /**
+     * this initialises choice box to allow for the selection of different festival voices
+     */
+    {
+    	ObservableList<String> voices = FXCollections.observableArrayList();
+    	voices.addAll("Default","(voice_akl_nz_cw_cg_cg)","(voice_akl_nz_jdt_diphone)");
+    	festivalVoice.setItems(voices);
+    }
+    
     
 	@FXML
 	void handleCreate() {
@@ -142,15 +157,21 @@ public class CreateMenuController {
 		Main.changeScene("MainMenu.fxml", this);
 	}
 	
+	
+	
 	@FXML
 	void handleSaveAudio(ActionEvent event) {
 		audioCount++;
 		String selectedText = displayTextArea.getSelectedText();
+		String[] wordCount = selectedText.split("\\s+");
 		
 		if(selectedText.isEmpty()) {
 			return;
+		}else if(wordCount.length>20) {
+			error("Can only save sections smaller than 20 words");
 		}
 		
+		if(festivalVoice.getSelectionModel().getSelectedItem().contentEquals("Default")) {
 		RunBash audioCreation = new RunBash("echo \"" + selectedText + "\" | text2wave -o ./temp/"+ audioCount + ".wav");
 		_team.submit(audioCreation);
 		_runningThread = true;
@@ -160,6 +181,17 @@ public class CreateMenuController {
 				_runningThread=false;
 			}
 		});
+		}else {
+			RunBash audioCreation = new RunBash("echo \"" + selectedText + "\" | text2wave -o ./temp/"+ audioCount + ".wav " + "-eval \""+festivalVoice.getSelectionModel().getSelectedItem()+"\"");
+			_team.submit(audioCreation);
+			_runningThread = true;
+			audioCreation.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+				@Override
+				public void handle(WorkerStateEvent event) {
+					_runningThread=false;
+				}
+			});
+		}
 		new AudioBar(selectedText,audioCount+".wav",_audioList);
 		audioBox.setItems(_audioList);
 
