@@ -248,7 +248,7 @@ public class CreateMenuController implements Initializable {
 				@Override
 				public void handle(WorkerStateEvent event) {
 					_runningThread=false;
-					if(audioCreation.returnError().substring(0, 10).contentEquals("SIOD ERROR")) {
+					if(audioCreation.returnError() != null || audioCreation.returnError().substring(0, 10).contentEquals("SIOD ERROR")) {
 						error("some words selected cannot be converted by selcted voice package");
 						return;
 					}
@@ -341,7 +341,7 @@ public class CreateMenuController implements Initializable {
 				@Override
 				public void handle(WorkerStateEvent event) {
 					_runningThread=false;
-					if(audioCreation.returnError().substring(0, 10).contentEquals("SIOD ERROR")) {
+					if(audioCreation.returnError() != null ||audioCreation.returnError().substring(0, 10).contentEquals("SIOD ERROR")) {
 						error("some words selected cannot be converted by selcted voice package");
 						return;
 					}

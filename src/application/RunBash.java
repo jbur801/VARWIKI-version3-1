@@ -54,7 +54,8 @@ public class RunBash extends Task<List<String>>{
 			}
 			process.destroy();
 
-			System.out.println(_stdError);
+			//System.out.println(_stdError);
+			//System.out.println(_stdError);
 		}catch(Exception e) {
 			e.printStackTrace();
 		}

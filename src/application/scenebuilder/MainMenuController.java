@@ -83,14 +83,10 @@ public class MainMenuController implements Initializable{
 
 	}
 
+	
 	@FXML
 	void handleForward(ActionEvent event) {
-		List<HBox> creations =  videoListView.getItems();
-		int i = creations.indexOf(_lastSelected)+1;
-		if (i>=creations.size()) {
-			i=0;
-		}
-		setup(creations.get(i));
+		_player.getMediaPlayer().seek( _player.getMediaPlayer().getCurrentTime().add( Duration.seconds(3)));
 	}
 
 	@FXML
@@ -202,12 +198,7 @@ public class MainMenuController implements Initializable{
 
 	@FXML
 	void handleBackward(ActionEvent event) {
-		List<HBox> creations =  videoListView.getItems();
-		int i = creations.indexOf(_lastSelected)-1;
-		if (i<0) {
-			i=creations.size()-1;
-		}
-		setup(creations.get(i));
+		_player.getMediaPlayer().seek( _player.getMediaPlayer().getCurrentTime().add( Duration.seconds(3)));
 	}
 
 	@FXML
