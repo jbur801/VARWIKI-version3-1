@@ -1,0 +1,97 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;                                                                       ;;
+;;;                Centre for Speech Technology Research                  ;;
+;;;                     University of Edinburgh, UK                       ;;
+;;;                       Copyright (c) 1996,1997                         ;;
+;;;                        All Rights Reserved.                           ;;
+;;;                                                                       ;;
+;;;  Permission to use, copy, modify, distribute this software and its    ;;
+;;;  documentation for research, educational and individual use only, is  ;;
+;;;  hereby granted without fee, subject to the following conditions:     ;;
+;;;   1. The code must retain the above copyright notice, this list of    ;;
+;;;      conditions and the following disclaimer.                         ;;
+;;;   2. Any modifications must be clearly marked as such.                ;;
+;;;   3. Original authors' names are not deleted.                         ;;
+;;;  This software may not be used for commercial purposes without        ;;
+;;;  specific prior written permission from the authors.                  ;;
+;;;                                                                       ;;
+;;;  THE UNIVERSITY OF EDINBURGH AND THE CONTRIBUTORS TO THIS WORK        ;;
+;;;  DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING      ;;
+;;;  ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT   ;;
+;;;  SHALL THE UNIVERSITY OF EDINBURGH NOR THE CONTRIBUTORS BE LIABLE     ;;
+;;;  FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES    ;;
+;;;  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN   ;;
+;;;  AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,          ;;
+;;;  ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF       ;;
+;;;  THIS SOFTWARE.                                                       ;;
+;;;                                                                       ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;;   A hand specified tree to predict zcore durations
+;;;
+;;;
+
+(set! akl_nz_jno::zdur_tree 
+ '
+   ((R:SylStructure.parent.R:Syllable.p.syl_break > 1 ) ;; clause initial
+    ((1.5))
+    ((R:SylStructure.parent.syl_break > 1)   ;; clause final
+     ((1.5))
+     ((1.0)))))
+
+(set! akl_nz_jno::phone_durs
+'(
+  ;;; PHONE DATA  
+  ;; name zero mean in seconds e.g.
+  (# 0.0 0.250)
+  (uh 0.0 0.250)
+   (e   0.0 0.250)
+   (a   0.0 0.250)
+   (o   0.0 0.250)
+   (u  0.0 0.250)
+   (i   0.0 0.250)
+   (ii  0.0 0.250)
+   (ir  0.0 0.250)
+   (uu  0.0 0.250)
+   (uw  0.0 0.250)
+   (oo  0.0 0.250)
+   (aa  0.0 0.250)
+   (@@r 0.0 0.250)
+   (ai  0.0 0.250)
+   (ei  0.0 0.250)
+   (oi  0.0 0.250)
+   (ow  0.0 0.250)
+   (ou  0.0 0.250)
+   (oul 0.0 0.250)
+   (@  0.0 0.250)
+   (p 0.0 0.250)
+   (t 0.0 0.250)
+   (t^ 0.0 0.250)
+   (k  0.0 0.250)
+   (b  0.0 0.250)
+   (d  0.0 0.250)
+   (g 0.0 0.250)
+   (s  0.0 0.250)
+   (z 0.0 0.250)
+   (sh 0.0 0.250)
+   (zh 0.0 0.250)
+   (f 0.0 0.250)
+   (v 0.0 0.250)
+   (th 0.0 0.250)
+   (dh 0.0 0.250)
+   (ch  0.0 0.250)
+   (jh 0.0 0.250)
+   (h   0.0 0.250)
+   (m 0.0 0.250)
+   (m! 0.0 0.250)
+   (n 0.0 0.250)
+   (n! 0.0 0.250)
+   (ng 0.0 0.250)
+   (l  0.0 0.250)
+   (l! 0.0 0.250)
+   (y 0.0 0.250)
+   (r 0.0 0.250)
+   (w 0.0 0.250)
+))
+
+(provide 'akl_nz_jno_durdata)

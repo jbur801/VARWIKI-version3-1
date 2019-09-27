@@ -1,0 +1,37 @@
+Changes made to akl_nz_jdt voice
+
+
+
+Prior to 23rd March ( bit sketchy - but here is what I remember).
+* In akl_nz_jdt_tokenizer.scm  
+ (set! token_to_words akl_nz_jdt::token_to_words) to (set! token_to_words english_token_to_words)
+
+So this is the a set of words that comes with the main realease - rad and kal - should check dictionary appropriate.
+
+*in akl_nz.jdt_diphones.scm
+Alex changed the intonation model to that of KAL (which is also used by rab).
+
+ON March 23rd
+* in akl_nz_jdt_durdata.scm
+CIW changed duration values to those used by rab (and KAL). Added a value more values to the list, and checked the values - these actually look a bit strange to me, but will leave for now.
+
+* tried to update duration tree with the gsw_dur one - didn't work - suspect I just don't know the syntax properly.
+
+ON Mark 24th
+** in akl_nz_jdt_durdata.scm
+current copied gsw_cart_tree_duration from gswdurtreeZ.scm and used that. Tried yesterday to reference it directly (see above). This way works - improves speech abit more.
+ 
+* in akl_nz_jdt_duration.scm
+changed duration stretch to be 1.0 (from earlier change of 0.8).
+
+TO DO
+
+Lexicon needs revisiting - Jono removing double entries but -may well remove wrong ones.
+
+Need to look at use of ir phoneme - and how "here" and "hair" are realized. Also all "ing" endings realized as "in" - so would like to change. Plus a few other oddities.
+
+Note that whilst punctuation marks work most of the time - need longer text for ? to work.
+
+Note in lexicon some words have "-" phoneme - which we don't have - presume short pause - also need to check.
+
+
