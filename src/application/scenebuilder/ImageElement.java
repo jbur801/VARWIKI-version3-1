@@ -8,6 +8,8 @@ import java.net.URL;
 import application.Main;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.Event;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -21,8 +23,9 @@ public class ImageElement extends AnchorPane{
 	
     @FXML
     private ImageView _imageHolder;
-    private RadioButton _isSelected;
-    private Parent root;
+    @FXML
+    private RadioButton _button;
+    private boolean _isSelected;
 
     public ImageElement(String imageName) {
     	super();
@@ -42,13 +45,12 @@ public class ImageElement extends AnchorPane{
 				imageURL = new File(imagePath).toURI().toURL();
 	            Image image = new Image(imageURL.toExternalForm(),200,200,false,false,true);
 	            _imageHolder.setImage(image);
-	           
+	            _isSelected=true;
 			} catch (MalformedURLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				
 			}
-        	
             /**
             parentProperty().addListener(new ChangeListener() {
                 @Override
@@ -58,14 +60,19 @@ public class ImageElement extends AnchorPane{
                 }
             });
             **/
-
     }
 
+	public boolean isSelected() {
+		return _isSelected;
+	}
+    
     @FXML
     public void handleImageClicked() {
-    _isSelected.fire();
-    	//if(!_isSelected.isSelected())
-    if(false) {
+    	//idk
+    _isSelected = !_isSelected;
+    System.out.println(_isSelected);
+    _button.setSelected(_isSelected);
+    	if(_isSelected){
     _imageHolder.setOpacity(1);
     }else {
     		_imageHolder.setOpacity(0.2); 
