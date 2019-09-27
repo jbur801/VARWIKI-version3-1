@@ -39,62 +39,62 @@ public class CreateMenuController implements Initializable {
 	private ObservableList<HBox> _audioList = FXCollections.observableArrayList();
 
 	@FXML
-    private AnchorPane Search;
+	private AnchorPane Search;
 
-    @FXML
-    private TextField searchTextArea;
+	@FXML
+	private TextField searchTextArea;
 
-    @FXML
-    private Button _playButton;
-    
-    @FXML
-    private Button _deleteButton;
-    
-    @FXML
-    private Button _searchButton;
+	@FXML
+	private Button _playButton;
 
-    @FXML
-    private Button testButton;
-    
-    @FXML
-    private Button _upButton;
-    
-    @FXML
-    private Button _downButton;
+	@FXML
+	private Button _deleteButton;
 
-    @FXML
-    private Button saveButton;
-    
-    @FXML
-    private ChoiceBox<String> _festivalVoice;
+	@FXML
+	private Button _searchButton;
 
-    @FXML
-    private TextArea displayTextArea;
+	@FXML
+	private Button testButton;
 
-    @FXML
-    private ListView<HBox> audioBox;
+	@FXML
+	private Button _upButton;
 
-    @FXML
-    private Button createButton;
+	@FXML
+	private Button _downButton;
 
-    @FXML
-    private Button returnButton;
+	@FXML
+	private Button saveButton;
 
-    @FXML
-    private TextField videoName;
-    
-    
-    /**
-     * this initialises choice box to allow for the selection of different festival voices
-     */
-    @Override
+	@FXML
+	private ChoiceBox<String> _festivalVoice;
+
+	@FXML
+	private TextArea displayTextArea;
+
+	@FXML
+	private ListView<HBox> audioBox;
+
+	@FXML
+	private Button createButton;
+
+	@FXML
+	private Button returnButton;
+
+	@FXML
+	private TextField videoName;
+
+
+	/**
+	 * this initialises choice box to allow for the selection of different festival voices
+	 */
+	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
-    	ObservableList<String> voices = FXCollections.observableArrayList();
-    	voices.addAll("Default","(voice_akl_nz_cw_cg_cg)","(voice_akl_nz_jdt_diphone)");
-    	_festivalVoice.setItems(voices);
-    }
-    
-    
+		ObservableList<String> voices = FXCollections.observableArrayList();
+		voices.addAll("Default","(voice_akl_nz_cw_cg_cg)","(voice_akl_nz_jdt_diphone)");
+		_festivalVoice.setItems(voices);
+	}
+
+
 	@FXML
 	void handleCreate() {
 		if(_runningThread) {
@@ -106,13 +106,13 @@ public class CreateMenuController implements Initializable {
 			return;
 		}
 
-		
+
 		Object[] audioFiles = audioBox.getChildrenUnmodifiable().toArray();
 		String audioFileNames="";
 		for(Object audio:audioFiles) {
 			audioFileNames = audioFileNames+audio.toString();
 		}
-		
+
 		System.out.println(audioFileNames);
 		RunBash mergeAudio = new RunBash("sox "+ audioFileNames +" ./temp/output.wav");
 		_team.submit(mergeAudio);	
@@ -155,37 +155,37 @@ public class CreateMenuController implements Initializable {
 			}
 		});
 	}
-	
+
 	@FXML
 	void handleReturn() {
 		Main.changeScene("MainMenu.fxml", this);
 	}
-	
-	
-	
+
+
+
 	@FXML
 	void handleSaveAudio(ActionEvent event) {
 		audioCount++;
 		String selectedText = displayTextArea.getSelectedText();
 		String[] wordCount = selectedText.split("\\s+");
-		
+
 		if(selectedText.isEmpty()) {
 			return;
 		}else if(wordCount.length>20) {
 			error("Can only save sections smaller than 20 words");
 		}
-		
+
 		String voice = _festivalVoice.getSelectionModel().getSelectedItem();
 		if(voice.contentEquals("Default") || voice.isEmpty()) {
-		RunBash audioCreation = new RunBash("echo \"" + selectedText + "\" | text2wave -o ./temp/"+ audioCount + ".wav");
-		_team.submit(audioCreation);
-		_runningThread = true;
-		audioCreation.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
-			@Override
-			public void handle(WorkerStateEvent event) {
-				_runningThread=false;
-			}
-		});
+			RunBash audioCreation = new RunBash("echo \"" + selectedText + "\" | text2wave -o ./temp/"+ audioCount + ".wav");
+			_team.submit(audioCreation);
+			_runningThread = true;
+			audioCreation.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+				@Override
+				public void handle(WorkerStateEvent event) {
+					_runningThread=false;
+				}
+			});
 		}else {
 			RunBash audioCreation = new RunBash("echo \"" + selectedText + "\" | text2wave -o ./temp/"+ audioCount + ".wav " + "-eval \""+_festivalVoice.getSelectionModel().getSelectedItem()+"\"");
 			_team.submit(audioCreation);
@@ -197,7 +197,7 @@ public class CreateMenuController implements Initializable {
 				}
 			});
 		}
-		new AudioBar(selectedText,audioCount+".wav",_audioList);
+		new AudioBar(selectedText,audioCount+"",_audioList);
 		audioBox.setItems(_audioList);
 
 	}
@@ -234,7 +234,7 @@ public class CreateMenuController implements Initializable {
 						error("search term not found");
 					}
 					_searchButton.setText("search");
-					
+
 					displayTextArea.setText(text);
 					searchTextArea.setEditable(false);
 					_searchButton.setVisible(false);;
@@ -251,66 +251,76 @@ public class CreateMenuController implements Initializable {
 	void handleTestAudio(ActionEvent event) {
 		System.out.println(displayTextArea.getSelectedText());
 		String selectedText = displayTextArea.getSelectedText();
-		if(selectedText.isEmpty()) {
+		if(selectedText.isEmpty() || _runningThread) {
 			return;
 		}
+
+
 		String voice = _festivalVoice.getSelectionModel().getSelectedItem();
-		if(voice == null || voice.contentEquals("Default")) {
-		_runningThread = true;	
-		RunBash festivalFile = new RunBash( "echo '(SayText \"" +selectedText+"\")' > " +audioCount+".scm");	
-		_team.submit(festivalFile);
-		RunBash audioCreation = new RunBash("festival -b "+ audioCount+".scm");
-		_team.submit(audioCreation);
-		
-		audioCreation.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
-			@Override
-			public void handle(WorkerStateEvent event) {
-				_runningThread=false;
-			}
-		});
-		}else {
-			_runningThread = true;
-			RunBash festivalFile = new RunBash("echo -e '"+voice+ "\n(SayText \"" +selectedText+"\")' > " +audioCount+".scm");	
-			_team.submit(festivalFile);
-			RunBash audioCreation = new RunBash("festival -b "+ audioCount+".scm");
+		if(voice == null ||voice.contentEquals("Default")) {
+			RunBash audioCreation = new RunBash("echo \"" + selectedText + "\" | text2wave -o ./temp/"+ audioCount + ".wav");
 			_team.submit(audioCreation);
-		
+			_runningThread = true;
 			audioCreation.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 				@Override
 				public void handle(WorkerStateEvent event) {
-					_runningThread=false;
+					RunBash playAudio = new RunBash("play ./temp/"+audioCount+".wav");
+					_team.submit(playAudio);
+					playAudio.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+						@Override
+						public void handle(WorkerStateEvent event) {
+							_runningThread=false;
+						}
+					});
 				}
 			});
-			
+		}else {
+			RunBash audioCreation = new RunBash("echo \"" + selectedText + "\" | text2wave -o ./temp/"+ audioCount + ".wav " + "-eval \""+_festivalVoice.getSelectionModel().getSelectedItem()+"\"");
+			_team.submit(audioCreation);
+			_runningThread = true;
+			audioCreation.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+				@Override
+				public void handle(WorkerStateEvent event) {
+					RunBash playAudio = new RunBash("play ./temp/"+audioCount+".wav");
+					_team.submit(playAudio);
+					playAudio.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+						@Override
+						public void handle(WorkerStateEvent event) {
+							_runningThread=false;
+						}
+					});
+				}
+			});
 		}
 
+
 	}
-	
+
 	@FXML
 	void handlePlayAudio(ActionEvent event) {
 		HBox audio = audioBox.getSelectionModel().getSelectedItem();
 		((AudioBar) audio).playAudio();
 	}
-	
+
 	@FXML
 	void handleDeleteAudio(ActionEvent event) {
 		HBox audio = audioBox.getSelectionModel().getSelectedItem();
 		((AudioBar) audio).delete();
 	}
-	
+
 	@FXML
 	void handleMoveAudioDown(ActionEvent event) {
 		HBox audio = audioBox.getSelectionModel().getSelectedItem();
 		((AudioBar) audio).moveDown();
 	}
-	
+
 	@FXML
 	void handleMoveAudioUp(ActionEvent event) {
 		HBox audio = audioBox.getSelectionModel().getSelectedItem();
 		((AudioBar) audio).moveUp();
 	}
-	
-	
+
+
 	/**
 	 * helper method that creates a popup when an error occurs
 	 * @param msg

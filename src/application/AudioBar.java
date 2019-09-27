@@ -103,7 +103,7 @@ public class AudioBar extends HBox{
 		}
 		_play=true;
 
-		RunBash audioCreation = new RunBash("echo \"" + _text.getText() + "\" | festival --tts");
+		RunBash audioCreation = new RunBash("play ./temp/"+_name+".wav");
 		_team.submit(audioCreation);
 		audioCreation.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 			@Override
