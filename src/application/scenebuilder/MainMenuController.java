@@ -31,8 +31,13 @@ import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import application.*;
 
+/**
+ * 
+ *
+ */
 public class MainMenuController implements Initializable{
 
 
@@ -47,6 +52,9 @@ public class MainMenuController implements Initializable{
 
 	private HBox _lastSelected;
 	private State _state = State.EMPTY;
+	
+	
+	
 	@FXML
 	private Button createButton;
 	
@@ -75,9 +83,11 @@ public class MainMenuController implements Initializable{
 	private ListView<HBox> videoListView;
 	private boolean _muted = false;
 
+	
+	/*
+	 * This initializer block loads all current video creations
+	 */
 	{
-
-
 		RunBash bash = new RunBash("List=`ls ./VideoCreations` ; List=${List//.???/} ; printf \"${List// /.\\\\n}\\n\"");
 		_team.submit(bash);
 		bash.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
@@ -112,15 +122,14 @@ public class MainMenuController implements Initializable{
 	void handleSlider(ActionEvent event) {
 		
 	}
+	
 
+	/*
+	 * fastforwards the current video
+	 */
 	@FXML
 	void handleForward(ActionEvent event) {
-		List<HBox> creations =  videoListView.getItems();
-		int i = creations.indexOf(_lastSelected)+1;
-		if (i>=creations.size()) {
-			i=0;
-		}
-		play(creations.get(i));
+		_player.getMediaPlayer().seek( _player.getMediaPlayer().getCurrentTime().add( Duration.seconds(3)) );
 	}
 
 	@FXML
@@ -157,6 +166,7 @@ public class MainMenuController implements Initializable{
 				//can fix if you care to
 				_lastSelected = currentSelection;
 			}
+			
 			if(currentSelection.equals(_lastSelected)){
 				_multiButton.setText("Pause");
 				_player.getMediaPlayer().play();
@@ -225,12 +235,7 @@ public class MainMenuController implements Initializable{
 
 	@FXML
 	void handleBackward(ActionEvent event) {
-		List<HBox> creations =  videoListView.getItems();
-		int i = creations.indexOf(_lastSelected)-1;
-		if (i<0) {
-			i=creations.size()-1;
-		}
-		play(creations.get(i));
+		_player.getMediaPlayer().seek( _player.getMediaPlayer().getCurrentTime().add( Duration.seconds(-3)) );
 	}
 
 	@FXML
