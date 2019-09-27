@@ -1,6 +1,8 @@
 package application.scenebuilder;
 
+import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -14,10 +16,14 @@ import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
@@ -28,7 +34,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.MediaView;
 import javafx.scene.text.Text;
-
+import javafx.stage.Stage;
 import application.*;
 
 public class CreateMenuController implements Initializable {
@@ -40,13 +46,16 @@ public class CreateMenuController implements Initializable {
 	private ExecutorService _team = Executors.newSingleThreadExecutor(); 
 	private boolean _runningThread;
 	private int audioCount=0;
-
-
+	private SetImagesController _controller;
+	
 	@FXML
 	private Button _playButton;
 
 	@FXML
 	private TextField searchTextArea;
+	
+	@FXML
+	private Button _imageButton;
 	
 	@FXML
 	private Button _deleteButton;
@@ -62,6 +71,9 @@ public class CreateMenuController implements Initializable {
     
     @FXML
     private Button _searchButton;
+    
+    @FXML 
+    private CheckBox _images;
 
     @FXML
     private Button testButton;
@@ -83,7 +95,8 @@ public class CreateMenuController implements Initializable {
 
     @FXML
     private TextField videoName;
-    
+	private boolean _manual;
+
 	/**
 	 * this initialises choice box to allow for the selection of different festival voices
 	 */
@@ -93,6 +106,7 @@ public class CreateMenuController implements Initializable {
 		ObservableList<String> voices = FXCollections.observableArrayList();
 		voices.addAll("Default","(voice_akl_nz_cw_cg_cg)","(voice_akl_nz_jdt_diphone)");
 		_festivalVoice.setItems(voices);
+		_manual=false;
 	}
     
 	@FXML
@@ -119,7 +133,7 @@ public class CreateMenuController implements Initializable {
 			Text text = (Text)box.getChildren().get(0);
 			audioFileNames = audioFileNames+text.getText();
 		}		
-		System.out.println(audioFileNames);
+		
 		RunBash mergeAudio = new RunBash("sox "+ audioFileNames +" ./resources/temp/output.wav");
 		_team.submit(mergeAudio);	
 		mergeAudio.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
@@ -166,6 +180,36 @@ public class CreateMenuController implements Initializable {
 	@FXML
 	void handleReturn() {
 		Main.changeScene("MainMenu.fxml", this);
+	}
+
+	@FXML
+	void handleImages() {
+		//yeap i did it
+		if(_searchButton.isVisible()==true) {
+			error("please search for a subject first");
+			return;
+		} else if (_runningThread) {
+			error("busy");
+			return;
+		}
+		
+		 FXMLLoader loader = new FXMLLoader();
+		 Stage imageStage = new Stage();
+	        loader.setLocation(getClass().getResource("SetImages.fxml"));
+	        Parent layout; 
+			try {
+				_controller=loader.getController();
+				layout = loader.load();
+		        Scene scene = new Scene(layout);
+		        imageStage.setScene(scene);
+		        imageStage.show();
+				_manual = true;
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+	
 	}
 	
 	@FXML
@@ -226,7 +270,6 @@ public class CreateMenuController implements Initializable {
 		command.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 			@Override
 			public void handle(WorkerStateEvent event) {
-				_runningThread=false;
 				String text;
 
 
@@ -242,8 +285,14 @@ public class CreateMenuController implements Initializable {
 					searchTextArea.setEditable(false);
 					_searchButton.setVisible(false);
 					videoName.setText(_term);
-					GetFlickr imageDown = new GetFlickr(searchTextArea.getText(), 5);
+					GetFlickr imageDown = new GetFlickr(searchTextArea.getText(), 9);
 					_team.submit(imageDown);
+					imageDown.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+						@Override
+						public void handle(WorkerStateEvent event) {
+							_runningThread = false;
+						}
+					});
 				} catch (InterruptedException | ExecutionException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -261,7 +310,7 @@ public class CreateMenuController implements Initializable {
 		}
 		String voice = _festivalVoice.getSelectionModel().getSelectedItem();
 		if(voice == null ||voice.contentEquals("Default")) {
-			System.out.println("echo \"" + selectedText + "\" | text2wave -o ./resources/temp/"+ audioCount + ".wav");
+			
 			RunBash audioCreation = new RunBash("echo \"" + selectedText + "\" | text2wave -o ./resources/temp/"+ audioCount + ".wav");
 			_team.submit(audioCreation);
 			_runningThread = true;
