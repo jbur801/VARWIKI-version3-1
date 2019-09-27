@@ -91,14 +91,12 @@ public class MainMenuController implements Initializable{
 				}
 
 				if(_creations.get(0).isEmpty()) {
-					videoBox.getChildren().add(new Text("No current Creations"));
-					/**
+					
 					Text noCreations = new Text("No Current Creations");
-					List<Node> noVideos = new ArrayList<Node>();
-					noVideos.add(noCreations);
-					ObservableList<Vide> noList = FXCollections.observableArrayList(noVideos);
+					ObservableList<HBox> noList = FXCollections.observableArrayList();
+					noList.add(new HBox(noCreations));
 					videoListView.setItems(noList);
-					 **/
+					
 				}else {
 					ObservableList<HBox> videoList = FXCollections.observableArrayList();
 					for(String video:_creations) {
