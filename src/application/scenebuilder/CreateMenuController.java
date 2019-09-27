@@ -176,7 +176,7 @@ public class CreateMenuController implements Initializable {
 		}
 
 		String voice = _festivalVoice.getSelectionModel().getSelectedItem();
-		if(voice.contentEquals("Default") || voice.isEmpty()) {
+		if( voice ==null || voice.contentEquals("Default") ) {
 			RunBash audioCreation = new RunBash("echo \"" + selectedText + "\" | text2wave -o ./temp/"+ audioCount + ".wav");
 			_team.submit(audioCreation);
 			_runningThread = true;

@@ -41,6 +41,7 @@ public class RunBash extends Task<List<String>>{
 
 			while(process.isAlive()) {	
 			}
+			
 
 			BufferedReader stdOut = new BufferedReader(new InputStreamReader(process.getInputStream()));
 			String line;
@@ -48,6 +49,7 @@ public class RunBash extends Task<List<String>>{
 			while ((line = stdOut.readLine()) != null) {
 				_stdOut.add(line);
 			}
+			process.destroy();
 
 			//System.out.println(_stdOut);
 		}catch(Exception e) {
