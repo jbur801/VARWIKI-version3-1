@@ -53,9 +53,20 @@ public class Main extends Application {
 	}
 	
 	public static void initiateFileSystem() {
-		_team.submit(new RunBash("rm -r ./temp"));
-		_team.submit(new RunBash("mkdir ./VideoCreations ./temp"));
+		_team.submit(new RunBash("rm -r ./resources/temp"));
+		_team.submit(new RunBash("mkdir ./resources/VideoCreations ./resources/temp ./resources/temp/images"));
 
+	}
+
+
+	public static String getPathToResources() {
+		
+		return System.getProperty("user.dir") + "/bin/resources";
+	}
+
+	public static void clearImages() {
+		_team.submit(new RunBash("rm -r ./resources/temp/images"));
+		_team.submit(new RunBash("mkdir ./resources/temp/images"));
 	}
 
 
