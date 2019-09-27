@@ -236,6 +236,8 @@ public class CreateMenuController implements Initializable {
 				@Override
 				public void handle(WorkerStateEvent event) {
 					_runningThread=false;
+					new AudioBar(selectedText,audioCount+"",_audioList);
+					audioBox.setItems(_audioList);
 				}
 			});
 		}else {
@@ -246,11 +248,17 @@ public class CreateMenuController implements Initializable {
 				@Override
 				public void handle(WorkerStateEvent event) {
 					_runningThread=false;
+					if(audioCreation.returnError().substring(0, 10).contentEquals("SIOD ERROR")) {
+						error("some words selected cannot be converted by selcted voice package");
+						return;
+					}
+					new AudioBar(selectedText,audioCount+"",_audioList);
+					audioBox.setItems(_audioList);
+
 				}
 			});
 		}
-		new AudioBar(selectedText,audioCount+"",_audioList);
-		audioBox.setItems(_audioList);
+
 	}
 
 	@FXML
@@ -314,7 +322,7 @@ public class CreateMenuController implements Initializable {
 		}
 		String voice = _festivalVoice.getSelectionModel().getSelectedItem();
 		if(voice == null ||voice.contentEquals("Default")) {
-		
+
 			RunBash audioCreation = new RunBash("echo \"" + selectedText + "\" | festival --tts");
 			_team.submit(audioCreation);
 			_runningThread = true;
@@ -324,7 +332,7 @@ public class CreateMenuController implements Initializable {
 					_runningThread=false;
 				}
 			});
-			
+
 		}else {
 			RunBash audioCreation = new RunBash("echo {\""+voice+"\",'(SayText \""+selectedText+"\")'} | bash -c festival");
 			_team.submit(audioCreation);
@@ -333,6 +341,10 @@ public class CreateMenuController implements Initializable {
 				@Override
 				public void handle(WorkerStateEvent event) {
 					_runningThread=false;
+					if(audioCreation.returnError().substring(0, 10).contentEquals("SIOD ERROR")) {
+						error("some words selected cannot be converted by selcted voice package");
+						return;
+					}
 				}
 			});
 		}

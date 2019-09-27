@@ -54,7 +54,7 @@ public class Main extends Application {
 	
 	public static void initiateFileSystem() {
 		_team.submit(new RunBash("rm -r ./resources/temp"));
-		_team.submit(new RunBash("mkdir ./resources/VideoCreations ./resources/temp ./resources/temp/images"));
+		_team.submit(new RunBash("mkdir ./resources ./resources/VideoCreations ./resources/temp ./resources/temp/images"));
 
 	}
 

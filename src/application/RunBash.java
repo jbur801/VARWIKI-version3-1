@@ -19,6 +19,7 @@ public class RunBash extends Task<List<String>>{
 
 	private String _command;
 	private List<String> _stdOut = new ArrayList<String>();
+	private String _stdError;
 	private ProcessBuilder _pb;
 
 	public RunBash(String command){
@@ -43,7 +44,8 @@ public class RunBash extends Task<List<String>>{
 			while(process.isAlive()) {	
 			}
 			
-
+			BufferedReader stdError = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+			_stdError=stdError.readLine();
 			BufferedReader stdOut = new BufferedReader(new InputStreamReader(process.getInputStream()));
 			String line;
 
@@ -52,11 +54,19 @@ public class RunBash extends Task<List<String>>{
 			}
 			process.destroy();
 
-			//System.out.println(_stdOut);
+			System.out.println(_stdError);
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
 		return _stdOut;
+	}
+	
+	/**
+	 * returns error stream, can be used for general error checking
+	 * @return
+	 */
+	public String returnError() {
+		return _stdError;
 	}
 }
 
