@@ -1,6 +1,8 @@
 package application.scenebuilder;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 import application.Main;
@@ -23,16 +25,30 @@ public class ImageElement extends AnchorPane{
     private Parent root;
 
     public ImageElement(String imageName) {
-    	FXMLLoader fxmlLoader = new FXMLLoader();
-        fxmlLoader.setLocation(getClass().getResource("ImageElement.fxml"));
+    	super();
+    	FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("ImageElement.fxml"));
+        //fxmlLoader.setLocation(getClass().getResource("ImageElement.fxml"));
         fxmlLoader.setRoot(this);
         fxmlLoader.setController(this);
+        try { 
+          fxmlLoader.load();
+        } catch (IOException exception) { 
+          throw new RuntimeException(exception); 
+       } 
 
-        try {
-        	String imageURL = Main.getPathToResources() + "/temp/" + imageName + ".jpg";
-            fxmlLoader.load();
-            Image image = new Image(imageURL,200,200,false,false,true);
-            _imageHolder.setImage(image);
+        	String imagePath = Main.getPathToResources() + "/temp/images/" + imageName + ".jpg";
+        	URL imageURL;
+			try {
+				imageURL = new File(imagePath).toURI().toURL();
+	            Image image = new Image(imageURL.toExternalForm(),200,200,false,false,true);
+	            _imageHolder.setImage(image);
+	           
+			} catch (MalformedURLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				
+			}
+        	
             /**
             parentProperty().addListener(new ChangeListener() {
                 @Override
@@ -42,18 +58,17 @@ public class ImageElement extends AnchorPane{
                 }
             });
             **/
-        } catch (IOException exception) {
-            throw new RuntimeException(exception);
-        }
+
     }
 
     @FXML
     public void handleImageClicked() {
     _isSelected.fire();
-    	if(!_isSelected.isSelected())
-     _imageHolder.setEffect(new Glow());
-    	else {
-    		_imageHolder.setEffect(null); //________________________________---------------------------------
+    	//if(!_isSelected.isSelected())
+    if(false) {
+    _imageHolder.setOpacity(1);
+    }else {
+    		_imageHolder.setOpacity(0.2); 
     	}
      
     }
