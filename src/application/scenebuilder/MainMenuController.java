@@ -134,9 +134,6 @@ public class MainMenuController implements Initializable{
 			play();
 			break;
 		case FINISHED:
-			//todo: needs a real implementation, this currently does nothing
-			//_player.getMediaPlayer().setOnEndOfMedia(Runnable);
-
 			play();
 			break;
 		}
