@@ -479,10 +479,12 @@ public class CreateMenuController implements Initializable {
 		String text = ""; 	
 		File cmd = new File(Main.getPathToResources() + "/temp", "cmd.txt");
 		cmd.setWritable(true);
-
+		String lastImage="";
 		for(String name:images) {
 			text= text +"file './resources" + name +"'\nduration " + stringDuration + "\n";
+			lastImage=name;
 		}
+		text=text+lastImage;
 		try {
 			System.out.println(cmd.getAbsolutePath());
 			System.out.println(images.size());
