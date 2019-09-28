@@ -8,14 +8,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.scene.input.DragEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -34,6 +37,8 @@ import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.Slider;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
@@ -165,8 +170,7 @@ public class MainMenuController implements Initializable{
 	private void pause() {
 		_multiButton.setText("Play");
 		Duration time=_player.getMediaPlayer().getCurrentTime();
-		_player.getMediaPlayer().stop();
-		_player.getMediaPlayer().setStartTime(time);
+		_player.getMediaPlayer().pause();
 		_state=State.PAUSED;
 
 	}
@@ -183,27 +187,12 @@ public class MainMenuController implements Initializable{
 	}
 
 	private void play() {
+		
 		_player.getMediaPlayer().play();
-
-		_player.getMediaPlayer().setOnEndOfMedia(new Runnable() {
-			public void run() {
-				_state=State.FINISHED;
-				Node selected;
-				if(videoListView.getSelectionModel().isEmpty()) {
-					selected = videoListView.getChildrenUnmodifiable().get(0);
-				}
-				else {
-					selected = videoListView.getSelectionModel().getSelectedItem();
-				}
-				setup((HBox) selected);
-				_multiButton.setText("Replay");
-				
-
-			}
-		});
+		_player.getMediaPlayer().seek(Duration.millis(_slider.getValue()));
+		System.out.println(_player.getMediaPlayer().getCurrentTime().toSeconds());
 		_multiButton.setText("Pause");
 		_state= State.PLAYING;
-		System.out.println(_player.getMediaPlayer().getTotalDuration().toSeconds());
 	}
 
 	private void setup(HBox creationToPlay) {
@@ -225,7 +214,6 @@ public class MainMenuController implements Initializable{
 			_player.setMediaPlayer(mediaPlayer);
 			_player.getMediaPlayer().setMute(_muted);
 			 mediaPlayer.setOnReady(new Runnable() {
-
 			        @Override
 			        public void run() {
 			        	setupSlider();
@@ -236,15 +224,33 @@ public class MainMenuController implements Initializable{
 			_multiButton.setText("Play");
 			_state= State.PAUSED;
 
+			_player.getMediaPlayer().setOnEndOfMedia(new Runnable() {
+				public void run() {
+					_state=State.PAUSED;
+					_player.getMediaPlayer().stop();
+					_multiButton.setText("Replay");
+					
+				}
+			});
+
+			_slider.valueProperty().addListener(new ChangeListener<Number>(){
+				@Override
+				public void changed(ObservableValue<? extends Number> arg0, Number arg1, Number arg2) {
+					String time = "";
+					Double newValue = (Double)arg1;
+					time += String.format("%02d", (int)newValue.doubleValue()/60000);
+					time += ":";
+					time += String.format("%02d", (int)newValue.doubleValue()/1000);
+					_videoTime.setText(time);
+				}
+				
+			});
 			_player.getMediaPlayer().currentTimeProperty().addListener(new ChangeListener<Duration>() {
 				@Override
 				public void changed(ObservableValue<? extends Duration> observable, Duration oldValue,
 						Duration newValue) {				
-					String time = "";
-					time += String.format("%02d", (int)newValue.toMinutes());
-					time += ":";
-					time += String.format("%02d", (int)newValue.toSeconds());
-					_videoTime.setText(time);
+				
+					
 					_slider.setValue(newValue.toMillis());
 				}
 			});
@@ -254,29 +260,44 @@ public class MainMenuController implements Initializable{
 		}
 
 	}
+	private void checkPlay() {
+		if (_state == State.PLAYING) {
+			_player.getMediaPlayer().play();
+		}
+	}
 
+	/**
+	Set<Node> a = _slider.lookupAll("*");
+	for(Node thing:a) {
+		System.out.println(thing.toString());
+	}
+	**/
 	private void setupSlider() {
-
-		_slider.setOnDragDetected(new EventHandler<MouseEvent>() {
+		Pane _thumb = (Pane) _slider.lookup(".thumb");
+		//StackPane _track = (StackPane) _slider.lookup(".track");
+		
+		_thumb.setOnDragDetected(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent arg0) {
 				_player.getMediaPlayer().pause();
-				_slider.setOnMouseReleased(new EventHandler<MouseEvent>() {
-					@Override
-					public void handle(MouseEvent arg0) {
-						_player.getMediaPlayer().seek(Duration.millis(_slider.getValue()));
-						_player.getMediaPlayer().play();
-						_slider.removeEventHandler(MouseEvent.MOUSE_RELEASED, this);
-					}
-				});
-
 			}
 		});	
+		_thumb.setOnMouseReleased(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent arg0) {
+				System.out.println(_player.getMediaPlayer().getCurrentTime().toSeconds());
+				_player.getMediaPlayer().seek(Duration.millis(_slider.getValue()));
+				System.out.println(_player.getMediaPlayer().getCurrentTime().toSeconds());
+				checkPlay();
+			}
+		});
 		_slider.setOnMousePressed(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent arg0) {
+				System.out.println(_player.getMediaPlayer().getCurrentTime().toSeconds());
 				_player.getMediaPlayer().seek(Duration.millis(_slider.getValue()));
-				_player.getMediaPlayer().play();
+				System.out.println(_player.getMediaPlayer().getCurrentTime().toSeconds());
+				checkPlay();
 			}
 		});
 		_slider.setMax(_player.getMediaPlayer().getTotalDuration().toMillis());

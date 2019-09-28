@@ -51,8 +51,7 @@ public class RunBash extends Task<List<String>>{
 			while ((line = stdOut.readLine()) != null) {
 				_stdOut.add(line);
 			}
-			System.out.println(_stdError);
-			System.out.println(_stdOut);
+
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
