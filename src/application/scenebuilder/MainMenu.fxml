@@ -32,5 +32,6 @@
             <Button fx:id="muteButton" mnemonicParsing="false" onAction="#handleMute" text="Mute" />
          </children>
       </HBox>
+      <Button fx:id="deleteButton" layoutX="14.0" layoutY="558.0" mnemonicParsing="false" onAction="#handleDeleteVideo" text="Delete" />
    </children>
 </AnchorPane>
