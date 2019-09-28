@@ -55,6 +55,7 @@ public class CreateMenuController implements Initializable {
 	private boolean _runningThread;
 	private int audioCount=0;
 	private SetImagesController _controller;
+	private String _videoName;
 
 	@FXML
 	private Button _playButton;
@@ -103,6 +104,8 @@ public class CreateMenuController implements Initializable {
 
 	@FXML
 	private TextField videoName;
+	
+	
 	private Stage _stage;
 
 	/**
@@ -142,17 +145,17 @@ public class CreateMenuController implements Initializable {
 		}
 
 
-		String name = videoName.getText();
+		_videoName = videoName.getText();
 
-		if(name.isEmpty()) {
+		if(_videoName.isEmpty()) {
 			error("Creation must have a name");
 			return;
-		}else if((!name.matches("[a-zA-Z0-9_-]*"))) {
+		}else if((!_videoName.matches("[a-zA-Z0-9_-]*"))) {
 			error("name can only contain letter, numbers, _ and - ");
 			return;
 		}else{
 			//checks if file already exists
-			RunBash f = new RunBash("[ -e ./resources/VideoCreations/"+name+".mp4 ]");
+			RunBash f = new RunBash("[ -e ./resources/VideoCreations/"+_videoName+".mp4 ]");
 			_team.submit(f);
 			f.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 
@@ -168,7 +171,7 @@ public class CreateMenuController implements Initializable {
 						if(result.get() != ButtonType.OK) {
 							return;
 						}else {
-							RunBash remove = new RunBash("rm ./resources/VideoCreations/"+name+".mp4");
+							RunBash remove = new RunBash("rm ./resources/VideoCreations/"+_videoName+".mp4");
 							_team.submit(remove);
 							createVideo();
 						}
@@ -207,15 +210,15 @@ public class CreateMenuController implements Initializable {
 
 						try {
 							audioLength = Double.parseDouble(audioLengthSoxi.get().get(0));
-							RunBash createVideo1 = new RunBash("ffmpeg -i ./resources/temp/output.wav -vn -ar 44100 -ac 2 -b:a 192k ./resources/temp/output.mp3 &> /dev/null "
+							RunBash createVideoAudio = new RunBash("ffmpeg -i ./resources/temp/output.wav -vn -ar 44100 -ac 2 -b:a 192k ./resources/temp/output.mp3 &> /dev/null "
 									+ "; ffmpeg -f lavfi -i color=c=blue:s=320x240:d="+audioLength 
 									+ " -vf \"drawtext=fontfile=/path/to/font.ttf:fontsize=30: "
-									+ "fontcolor=white:x=(w-text_w)/2:y=(h-text_h)/2:text="+_term+"\" ./resources/temp/"+name+".mp4 &> /dev/null ;");
+									+ "fontcolor=white:x=(w-text_w)/2:y=(h-text_h)/2:text="+_term+"\" ./resources/temp/"+name+"noImage.mp4 &> /dev/null ;");
 
-							_team.submit(createVideo1);
+							_team.submit(createVideoAudio);
 							RunBash createVideo2;
 							if(!_images.isSelected()) {
-								createVideo2 = new RunBash("ffmpeg -i ./resources/temp/"+name +".mp4 -i ./resources/temp/output.mp3 -c:v copy -c:a aac -strict experimental "
+								createVideo2 = new RunBash("ffmpeg -i ./resources/temp/"+name +"noImage.mp4 -i ./resources/temp/output.mp3 -c:v copy -c:a aac -strict experimental "
 										+ "./resources/VideoCreations/"+name+".mp4  &> /dev/null");
 							} else {
 								System.out.println("images");
@@ -224,6 +227,7 @@ public class CreateMenuController implements Initializable {
 								videoMaker();
 								createVideo2 = new RunBash("ffmpeg -i ./resources/temp/"+name +".mp4 -i ./resources/temp/output.mp3 -c:v copy -c:a aac -strict experimental "
 										+ "./resources/VideoCreations/"+name+".mp4  &> /dev/null");
+								
 							}
 							_team.submit(createVideo2);
 							_runningThread = true;
@@ -236,6 +240,7 @@ public class CreateMenuController implements Initializable {
 							});
 						} catch (NumberFormatException | InterruptedException | ExecutionException e) {
 							error("Video Creation Failed");
+							_runningThread=false;
 							Main.changeScene("MainMenu.fxml", this);
 						}
 					}
@@ -250,11 +255,13 @@ public class CreateMenuController implements Initializable {
 	private void markImages(List<String> images) {
 		for (String path: images) {
 			System.out.println(path);
-			RunBash mark= new RunBash("ffmpeg -i ./resources" + path + " -vf \"drawtext=text='"+ videoName.getText() + "':fontcolor=white:fontsize=75:x=1002:y=100:\" ./resources" + path);
+			RunBash mark= new RunBash("ffmpeg -i ./resources/temp/images/" + path + " -vf \"drawtext=text='"+ videoName.getText() + "':fontcolor=white:fontsize=75:x=100:y=100:\" ./resources/temp/" + path);
 			_team.submit(mark);
 		}
 	}
-
+	
+	
+	
 	@FXML
 	void handleReturn() {
 		Main.changeScene("MainMenu.fxml", this);
@@ -286,6 +293,7 @@ public class CreateMenuController implements Initializable {
 	@FXML
 	void handleImages() {
 		//yeap i really did it
+		
 		if(_searchButton.isVisible()==true) {
 			error("please search for a subject first");
 			return;
@@ -487,12 +495,12 @@ public class CreateMenuController implements Initializable {
 		//cmd.setWritable(true);
 		String lastImage="";
 		for(String name:images) {
-			text= text +"file './resources" + name +"'\nduration " + stringDuration + "\n";
+			text= text +"file '" + name +"'\nduration " + stringDuration + "\n";
 			lastImage=name;
 		}
 		text=text+"file '"+lastImage+"'";
 
-		RunBash createFile = new RunBash("echo -e \""+text+ "\" | cat ./resources/cmd.txt");
+		RunBash createFile = new RunBash("touch ./resources/temp/cmd.txt ; echo -e \""+text+ "\" > ./resources/temp/cmd.txt");
 		_team.submit(createFile);
 		
 		/*
@@ -517,20 +525,9 @@ public class CreateMenuController implements Initializable {
 	//ffmpeg -f concat -safe 0 -i ./resources/temp/cmd.txt -vsync vfr -pix_fmt yuv420p -y -an ./resources/temp/hey.mp4 -vf "pad=ceil(iw/2)
 
 	private void videoMaker() {
-		RunBash makeVideo = new RunBash("ffmpeg -f concat -safe 0 -i ./resources/temp/cmd.txt -vsync vfr -pix_fmt yuv420p ./resources/temp/"+ videoName.getText() +".mp4");
+		RunBash makeVideo = new RunBash("ffmpeg -f concat -safe 0 -i ./resources/temp/cmd.txt -vsync vfr -pix_fmt yuv420p -vf 'scale=trunc(iw/2)*2:trunc(ih/2)*2'  ./resources/temp/"+ _videoName +".mp4");
 		_team.submit(makeVideo);
 	}
-
-
-
-
-
-
-
-
-
-
-
 
 
 
