@@ -85,6 +85,9 @@ public class MainMenuController implements Initializable{
 
 	@FXML
 	private Button muteButton;
+	
+	@FXML
+	private Button _exitButton;
 
 	@FXML
 	private ListView<HBox> videoListView;
@@ -120,6 +123,18 @@ public class MainMenuController implements Initializable{
 	}
 
 
+	@FXML
+	void handleExit(ActionEvent event) {
+		Alert alert = new Alert(AlertType.CONFIRMATION);
+		alert.setTitle("Are you sure?");
+		alert.setHeaderText("Are you sure you want to leave?");
+		alert.setContentText("You are about to EXIT this application");
+		Optional<ButtonType> result = alert.showAndWait();
+
+		if(result.get() == ButtonType.OK) {
+			System.exit(0);
+		}
+	}
 
 	@FXML
 	void handleSelectionChange() {

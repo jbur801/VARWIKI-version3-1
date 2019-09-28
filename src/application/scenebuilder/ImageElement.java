@@ -75,7 +75,6 @@ public class ImageElement extends AnchorPane{
     
     @FXML
     public void handleImageClicked() {
-    	//idk
     _isSelected = !_isSelected;
     System.out.println(_isSelected);
     _button.setSelected(_isSelected);

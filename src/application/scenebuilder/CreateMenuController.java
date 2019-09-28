@@ -320,12 +320,12 @@ public class CreateMenuController implements Initializable {
 		}
 		popupSetImages();
 	}
+	
 	public void popdownSetImages() {
 		_stage.hide();;
 	}
+	
 	private void popupSetImages() {
-
-
 		_stage.show();
 	}
 
@@ -520,27 +520,11 @@ public class CreateMenuController implements Initializable {
 		RunBash createFile = new RunBash("touch ./resources/temp/cmd.txt ; echo -e \""+text+ "\" > ./resources/temp/cmd.txt");
 		_team.submit(createFile);
 
-		/*
-		try {
-			System.out.println(cmd.getAbsolutePath());
-			System.out.println(images.size());
-			System.out.println(text);
-			cmd.createNewFile();
-			FileWriter writer = new FileWriter(cmd);
-			BufferedWriter idkanymore = new BufferedWriter(writer);
-			idkanymore.write(text);
-			idkanymore.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		 */
-
 
 
 	}
+	
 	//ffmpeg -f concat -safe 0 -i ./resources/temp/cmd.txt -vsync vfr -pix_fmt yuv420p -y -an ./resources/temp/hey.mp4 -vf "pad=ceil(iw/2)
-
 	private void videoMaker() {
 		RunBash makeVideo = new RunBash("ffmpeg -f concat -safe 0 -i ./resources/temp/cmd.txt -r 25 -pix_fmt yuv420p -vf 'scale=trunc(iw/2)*2:trunc(ih/2)*2'  ./resources/temp/"+ _videoName +".mp4");
 		_team.submit(makeVideo);
