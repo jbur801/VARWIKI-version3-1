@@ -11,7 +11,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.scene.input.MouseEvent;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
@@ -45,7 +49,7 @@ public class MainMenuController implements Initializable{
 		PAUSED,
 		FINISHED
 	};
-	
+
 	private ObservableList<HBox> _videoList = FXCollections.observableArrayList();
 
 	private HBox _lastSelected;
@@ -58,6 +62,9 @@ public class MainMenuController implements Initializable{
 
 	@FXML
 	private VBox videoBox;
+
+	@FXML
+	private Text _videoTime;
 
 	@FXML
 	private MediaView _player;
@@ -85,17 +92,18 @@ public class MainMenuController implements Initializable{
 
 	@FXML
 	void handleForward(ActionEvent event) {
-		List<HBox> creations =  videoListView.getItems();
-		int i = creations.indexOf(_lastSelected)+1;
-		if (i>=creations.size()) {
-			i=0;
-		}
-		setup(creations.get(i));
+		_player.getMediaPlayer().seek( _player.getMediaPlayer().getCurrentTime().add( Duration.seconds(3)));
 	}
 
 	@FXML
 	void handleMute(ActionEvent event) {
 		if(existingPlayer()) {
+
+			if(!_muted) {
+				muteButton.setText("Unmute");
+			}else {
+				muteButton.setText("Mute");
+			}
 			_muted=!_muted;
 			_player.getMediaPlayer().setMute(_muted);
 		}
@@ -103,7 +111,6 @@ public class MainMenuController implements Initializable{
 
 
 	private boolean existingPlayer() {
-
 		return _player.getMediaPlayer()!=null;
 	}
 
@@ -149,7 +156,6 @@ public class MainMenuController implements Initializable{
 
 		@Override
 		protected Void call() throws Exception {
-
 			//updateProgress(1,Main.getDuration());
 			return null;
 
@@ -159,8 +165,25 @@ public class MainMenuController implements Initializable{
 
 	private void play() {
 		_player.getMediaPlayer().play();
+
+		_player.getMediaPlayer().setOnEndOfMedia(new Runnable() {
+			public void run() {
+				_state=State.FINISHED;
+				setup((HBox) videoListView.getSelectionModel().getSelectedItem());
+				_multiButton.setText("Play");
+			}
+		});
 		_multiButton.setText("Pause");
 		_state= State.PLAYING;
+		_slider.setMax(_player.getMediaPlayer().getTotalDuration().toSeconds());
+		_slider.setOnMousePressed(new EventHandler<MouseEvent>() {
+
+			@Override
+			public void handle(MouseEvent arg0) {
+				_player.getMediaPlayer().seek(Duration.seconds(_slider.getValue()));
+			}
+
+		});
 	}
 
 	private void setup(HBox creationToPlay) {
@@ -190,6 +213,19 @@ public class MainMenuController implements Initializable{
 			_player.getMediaPlayer().setOnEndOfMedia(new RunBash("") {
 
 			});
+
+			_player.getMediaPlayer().currentTimeProperty().addListener(new ChangeListener<Duration>() {
+				@Override
+				public void changed(ObservableValue<? extends Duration> observable, Duration oldValue,
+						Duration newValue) {				
+					String time = "";
+					time += String.format("%02d", (int)newValue.toMinutes());
+					time += ":";
+					time += String.format("%02d", (int)newValue.toSeconds());
+					_videoTime.setText(time);
+					_slider.setValue((int)newValue.toSeconds());
+				}
+			});
 			//_slider.valueProperty().bind(task);
 
 			//_player.getMediaPlayer().setStartTime(arg0);
@@ -202,12 +238,7 @@ public class MainMenuController implements Initializable{
 
 	@FXML
 	void handleBackward(ActionEvent event) {
-		List<HBox> creations =  videoListView.getItems();
-		int i = creations.indexOf(_lastSelected)-1;
-		if (i<0) {
-			i=creations.size()-1;
-		}
-		setup(creations.get(i));
+		_player.getMediaPlayer().seek( _player.getMediaPlayer().getCurrentTime().add( Duration.seconds(-3)));
 	}
 
 	@FXML
@@ -245,11 +276,11 @@ public class MainMenuController implements Initializable{
 
 				try {
 					_creations = bash.get();
-					
-						for(String image:_creations) {
+
+					for(String image:_creations) {
 						System.out.println(image);
-						}
-				
+					}
+
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -271,6 +302,6 @@ public class MainMenuController implements Initializable{
 			}
 		});
 	}
-	
-	
+
+
 }

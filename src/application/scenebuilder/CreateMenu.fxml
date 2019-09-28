@@ -15,7 +15,7 @@
       <TextField fx:id="searchTextArea" layoutX="14.0" layoutY="74.0" />
       <Button fx:id="_imageButton" layoutX="16.0" layoutY="475.0" mnemonicParsing="false" onAction="#handleImages" text="Modify display" />
       <Text layoutX="14.0" layoutY="48.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Please Enter a Term to Search" />
-      <Button fx:id="testButton" layoutX="14.0" layoutY="195.0" mnemonicParsing="false" onAction="#handleCreate2" text="Test Audio" />
+      <Button fx:id="testButton" layoutX="14.0" layoutY="195.0" mnemonicParsing="false" onAction="#handleTestAudio" text="Test Audio" />
       <Button fx:id="saveButton" layoutX="14.0" layoutY="231.0" mnemonicParsing="false" onAction="#handleSaveAudio" text="Save Audio" />
       <TextArea fx:id="displayTextArea" layoutX="233.0" layoutY="62.0" prefHeight="213.0" prefWidth="514.0" wrapText="true" />
       <Text layoutX="386.0" layoutY="305.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Order of saved audio files:" />
