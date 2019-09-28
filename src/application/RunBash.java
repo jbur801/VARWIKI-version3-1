@@ -19,21 +19,20 @@ public class RunBash extends Task<List<String>>{
 
 	private String _command;
 	private List<String> _stdOut = new ArrayList<String>();
-	private String _stdError;
 	private ProcessBuilder _pb;
+	private String _stdError;
 
 	public RunBash(String command){
 		_command = command;
 		_pb = new ProcessBuilder("bash", "-c", _command);
 		
-		System.out.println(command);
 		//sets the working directory of the processbuilder to be in the current folder. There is a problem with open jdk where default wd is home. oracle does not have this problem
 		_pb.directory(new File(ClassLoader.getSystemClassLoader().getResource(".").getPath()));
 	}
 
 
 	/**
-	 * all bash commands are run on a thread different to the applicaiton thread to prevent GUI freezing.
+	 * all bash commands are run on a thread different to the application thread to prevent GUI freezing.
 	 */
 	@Override
 	protected List<String> call() throws Exception {
@@ -43,7 +42,6 @@ public class RunBash extends Task<List<String>>{
 
 			while(process.isAlive()) {	
 			}
-			
 			BufferedReader stdError = new BufferedReader(new InputStreamReader(process.getErrorStream()));
 			_stdError=stdError.readLine();
 			BufferedReader stdOut = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -52,20 +50,15 @@ public class RunBash extends Task<List<String>>{
 			while ((line = stdOut.readLine()) != null) {
 				_stdOut.add(line);
 			}
-			process.destroy();
 
-			//System.out.println(_stdError);
-			//System.out.println(_stdError);
+			//System.out.println(_stdOut);
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
 		return _stdOut;
 	}
-	
-	/**
-	 * returns error stream, can be used for general error checking
-	 * @return
-	 */
+
+
 	public String returnError() {
 		return _stdError;
 	}

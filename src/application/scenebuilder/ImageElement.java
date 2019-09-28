@@ -26,6 +26,7 @@ public class ImageElement extends AnchorPane{
     @FXML
     private RadioButton _button;
     private boolean _isSelected;
+    private String _name;
 
     public ImageElement(String imageName) {
     	super();
@@ -38,8 +39,8 @@ public class ImageElement extends AnchorPane{
         } catch (IOException exception) { 
           throw new RuntimeException(exception); 
        } 
-
-        	String imagePath = Main.getPathToResources() + "/temp/images/" + imageName + ".jpg";
+        	_name = "/temp/images/" + imageName + ".jpg";
+        	String imagePath = Main.getPathToResources() + _name;
         	URL imageURL;
 			try {
 				imageURL = new File(imagePath).toURI().toURL();
@@ -64,6 +65,11 @@ public class ImageElement extends AnchorPane{
 
 	public boolean isSelected() {
 		return _isSelected;
+	}
+	
+	@Override
+	public String toString() {
+		return _name;
 	}
     
     @FXML
