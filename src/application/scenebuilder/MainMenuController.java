@@ -11,6 +11,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -24,6 +27,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.Slider;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
@@ -45,11 +49,17 @@ public class MainMenuController implements Initializable{
 		PAUSED,
 		FINISHED
 	};
-	
+
 	private ObservableList<HBox> _videoList = FXCollections.observableArrayList();
 
 	private HBox _lastSelected;
 	private State _state = State.EMPTY;
+	
+	
+	@FXML
+	
+	private Text _videoTime;
+	
 	@FXML
 	private Button createButton;
 
@@ -83,7 +93,7 @@ public class MainMenuController implements Initializable{
 
 	}
 
-	
+
 	@FXML
 	void handleForward(ActionEvent event) {
 		_player.getMediaPlayer().seek( _player.getMediaPlayer().getCurrentTime().add( Duration.seconds(3)));
@@ -92,6 +102,12 @@ public class MainMenuController implements Initializable{
 	@FXML
 	void handleMute(ActionEvent event) {
 		if(existingPlayer()) {
+			
+			if(!_muted) {
+			muteButton.setText("Unmute");
+			}else {
+			muteButton.setText("Mute");
+			}
 			_muted=!_muted;
 			_player.getMediaPlayer().setMute(_muted);
 		}
@@ -123,9 +139,7 @@ public class MainMenuController implements Initializable{
 			play();
 			break;
 		case FINISHED:
-			//todo: needs a real implementation, this currently does nothing
-			//_player.getMediaPlayer().setOnEndOfMedia(Runnable);
-
+			//I made functionality that if video ends and you press play again it reststarts video
 			play();
 			break;
 		}
@@ -155,8 +169,17 @@ public class MainMenuController implements Initializable{
 
 	private void play() {
 		_player.getMediaPlayer().play();
+		
+		_player.getMediaPlayer().setOnEndOfMedia(new Runnable() {
+				public void run() {
+					_state=State.FINISHED;
+					setup((HBox) videoListView.getSelectionModel().getSelectedItem());
+					_multiButton.setText("Play");
+					}
+				});
 		_multiButton.setText("Pause");
 		_state= State.PLAYING;
+		_slider.setMax(_player.getMediaPlayer().getTotalDuration().toSeconds());
 	}
 
 	private void setup(HBox creationToPlay) {
@@ -186,8 +209,20 @@ public class MainMenuController implements Initializable{
 			_player.getMediaPlayer().setOnEndOfMedia(new RunBash("") {
 
 			});
-			//_slider.valueProperty().bind(task);
-
+			
+			_player.getMediaPlayer().currentTimeProperty().addListener(new ChangeListener<Duration>() {
+				@Override
+				public void changed(ObservableValue<? extends Duration> observable, Duration oldValue,
+						Duration newValue) {				
+					String time = "";
+					time += String.format("%02d", (int)newValue.toMinutes());
+					time += ":";
+					time += String.format("%02d", (int)newValue.toSeconds());
+					_videoTime.setText(time);
+					_slider.setValue((int)newValue.toSeconds());
+				}
+			});
+			
 			//_player.getMediaPlayer().setStartTime(arg0);
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
@@ -233,11 +268,11 @@ public class MainMenuController implements Initializable{
 
 				try {
 					_creations = bash.get();
-					
-						for(String image:_creations) {
+
+					for(String image:_creations) {
 						System.out.println(image);
-						}
-				
+					}
+
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
