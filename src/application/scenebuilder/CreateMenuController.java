@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -27,6 +28,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ListView;
@@ -138,75 +140,111 @@ public class CreateMenuController implements Initializable {
 		if(_runningThread) {
 			return;
 		}
+
+
 		String name = videoName.getText();
+
 		if(name.isEmpty()) {
 			error("Creation must have a name");
 			return;
-		}
-		List<String> images = getSelectedImages();
-		String audioFileNames="";
-		for(Node audio:_audioList) {
-			audioFileNames = audioFileNames+audio.toString()+".wav ";
-		}		
+		}else if((!name.matches("[a-zA-Z0-9_-]*"))) {
+			error("name can only contain letter, numbers, _ and - ");
+			return;
+		}else{
 
-		RunBash mergeAudio = new RunBash("sox "+ audioFileNames +" ./resources/temp/output.wav");
-		_team.submit(mergeAudio);	
-		mergeAudio.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
-			@Override
-			public void handle(WorkerStateEvent event) {
-				RunBash audioLengthSoxi = new RunBash("soxi -D ./resources/temp/output.wav");
-				_team.submit(audioLengthSoxi);
-				_runningThread = true;
-				audioLengthSoxi.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
-					@Override
-					public void handle(WorkerStateEvent event) {
-						_runningThread=false;
-						double audioLength;
-						
-						try {
-							audioLength = Double.parseDouble(audioLengthSoxi.get().get(0));
-							RunBash createVideo1 = new RunBash("ffmpeg -i ./resources/temp/output.wav -vn -ar 44100 -ac 2 -b:a 192k ./resources/temp/output.mp3 &> /dev/null "
-									+ "; ffmpeg -f lavfi -i color=c=blue:s=320x240:d="+audioLength 
-									+ " -vf \"drawtext=fontfile=/path/to/font.ttf:fontsize=30: "
-									+ "fontcolor=white:x=(w-text_w)/2:y=(h-text_h)/2:text="+_term+"\" ./resources/temp/"+name+".mp4 &> /dev/null ;");
-						
-							_team.submit(createVideo1);
-							RunBash createVideo2;
-							if(!_images.isSelected()) {
-								createVideo2 = new RunBash("ffmpeg -i ./resources/temp/"+name +".mp4 -i ./resources/temp/output.mp3 -c:v copy -c:a aac -strict experimental "
-									+ "./resources/VideoCreations/"+name+".mp4  &> /dev/null");
-							} else {
-								markImages(images);
-								textFileBuilder(images,audioLength);
-								videoMaker();
-								createVideo2 = new RunBash("ffmpeg");
-							}
-							_team.submit(createVideo2);
-							_runningThread = true;
-							createVideo2.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+			//checks if file already exists
+			RunBash f = new RunBash("[ -e ./resources/VideoCreations/"+name+".mp4 ]");
+			_team.submit(f);
+			f.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+
+				@Override
+				public void handle(WorkerStateEvent arg0) {
+					if(f.getExitStatus()== 0) {
+						Alert alert = new Alert(AlertType.CONFIRMATION);
+						alert.setTitle("ERROR ");
+						alert.setHeaderText("File already exists");
+						alert.setContentText("would you like to overwrite?");
+						Optional<ButtonType> result = alert.showAndWait();
+
+						if(result.get() != ButtonType.OK) {
+							return;
+						}else {
+							RunBash remove = new RunBash("rm ./resources/VideoCreations/"+name+".mp4");
+							_team.submit(remove);
+
+
+							List<String> images = getSelectedImages();
+							String audioFileNames="";
+							for(Node audio:_audioList) {
+								audioFileNames = audioFileNames+audio.toString()+".wav ";
+							}		
+
+							RunBash mergeAudio = new RunBash("sox "+ audioFileNames +" ./resources/temp/output.wav");
+							_team.submit(mergeAudio);	
+							mergeAudio.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 								@Override
 								public void handle(WorkerStateEvent event) {
-									_runningThread=false;
-									Main.changeScene("MainMenu.fxml", this);
+									RunBash audioLengthSoxi = new RunBash("soxi -D ./resources/temp/output.wav");
+									_team.submit(audioLengthSoxi);
+									_runningThread = true;
+									audioLengthSoxi.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+										@Override
+										public void handle(WorkerStateEvent event) {
+											_runningThread=false;
+											double audioLength;
+
+											try {
+												audioLength = Double.parseDouble(audioLengthSoxi.get().get(0));
+												RunBash createVideo1 = new RunBash("ffmpeg -i ./resources/temp/output.wav -vn -ar 44100 -ac 2 -b:a 192k ./resources/temp/output.mp3 &> /dev/null "
+														+ "; ffmpeg -f lavfi -i color=c=blue:s=320x240:d="+audioLength 
+														+ " -vf \"drawtext=fontfile=/path/to/font.ttf:fontsize=30: "
+														+ "fontcolor=white:x=(w-text_w)/2:y=(h-text_h)/2:text="+_term+"\" ./resources/temp/"+name+".mp4 &> /dev/null ;");
+
+												_team.submit(createVideo1);
+												RunBash createVideo2;
+												if(!_images.isSelected()) {
+													createVideo2 = new RunBash("ffmpeg -i ./resources/temp/"+name +".mp4 -i ./resources/temp/output.mp3 -c:v copy -c:a aac -strict experimental "
+															+ "./resources/VideoCreations/"+name+".mp4  &> /dev/null");
+												} else {
+													System.out.println("images");
+													markImages(images);
+													textFileBuilder(images,audioLength);
+													videoMaker();
+													createVideo2 = new RunBash("ffmpeg -i ./resources/temp/"+name +".mp4 -i ./resources/temp/output.mp3 -c:v copy -c:a aac -strict experimental "
+															+ "./resources/VideoCreations/"+name+".mp4  &> /dev/null");
+												}
+												_team.submit(createVideo2);
+												_runningThread = true;
+												createVideo2.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+													@Override
+													public void handle(WorkerStateEvent event) {
+														_runningThread=false;
+														Main.changeScene("MainMenu.fxml", this);
+													}
+												});
+											} catch (NumberFormatException | InterruptedException | ExecutionException e) {
+												error("Video Creation Failed");
+												Main.changeScene("MainMenu.fxml", this);
+											}
+										}
+									});
+
 								}
 							});
-						} catch (NumberFormatException | InterruptedException | ExecutionException e) {
-							error("Video Creation Failed");
-							Main.changeScene("MainMenu.fxml", this);
 						}
 					}
-				});
+				}
 
-			}
-		});
+			});
+		}
 	}
-	
+
 	//ffmpeg -i ./resources/temp/images/moth-6.jpg -vf drawtext="text='MOTH':fontcolor=white:fontsize=75:x=1002:y=100:" ./resources/temp/images/moth-6.jpg
 
 	private void markImages(List<String> images) {
 		for (String path: images) {
 			System.out.println(path);
-			RunBash mark= new RunBash("ffmpeg -i ./resources" + path + "-vf \"drawtext=text='"+ videoName.getText() + "':fontcolor=white:fontsize=75:x=1002:y=100:\" ./resources" + path);
+			RunBash mark= new RunBash("ffmpeg -i ./resources" + path + " -vf \"drawtext=text='"+ videoName.getText() + "':fontcolor=white:fontsize=75:x=1002:y=100:\" ./resources" + path);
 			_team.submit(mark);
 		}
 	}

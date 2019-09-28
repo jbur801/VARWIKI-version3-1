@@ -6,6 +6,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -24,10 +25,13 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.Slider;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
@@ -207,9 +211,6 @@ public class MainMenuController implements Initializable{
 			Duration totalDuration = _player.getMediaPlayer().getTotalDuration();
 			_multiButton.setText("Play");
 			_state= State.PAUSED;
-			_player.getMediaPlayer().setOnEndOfMedia(new RunBash("") {
-
-			});
 
 			_player.getMediaPlayer().currentTimeProperty().addListener(new ChangeListener<Duration>() {
 				@Override
@@ -240,6 +241,10 @@ public class MainMenuController implements Initializable{
 
 	@FXML
 	void handleCreate() {
+		
+		if(_player.getMediaPlayer() !=null) {
+			_player.getMediaPlayer().dispose();
+		}
 		Main.changeScene("CreateMenu.fxml", this);
 	}
 

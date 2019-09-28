@@ -51,7 +51,7 @@ public class VideoBar extends HBox{
 			yesButton.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
 				public void handle(ActionEvent event) {
-					RunBash delete = new RunBash("rm -f ./VideoCreations/"+_name.getText()+".mp4");
+					RunBash delete = new RunBash("rm -f ./resources/VideoCreations/"+_name.getText()+".mp4");
 					_team.submit(delete);
 					_parent.remove(_bar);	
 
