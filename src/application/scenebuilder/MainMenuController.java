@@ -6,24 +6,33 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.scene.input.MouseEvent;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.Slider;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
@@ -32,6 +41,7 @@ import javafx.scene.media.MediaView;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import jdk.jfr.EventType;
 import application.*;
 
 public class MainMenuController implements Initializable{
@@ -45,10 +55,9 @@ public class MainMenuController implements Initializable{
 		PAUSED,
 		FINISHED
 	};
-	
+
 	private ObservableList<HBox> _videoList = FXCollections.observableArrayList();
 
-	private HBox _lastSelected;
 	private State _state = State.EMPTY;
 	@FXML
 	private Button createButton;
@@ -58,6 +67,9 @@ public class MainMenuController implements Initializable{
 
 	@FXML
 	private VBox videoBox;
+
+	@FXML
+	private Text _videoTime;
 
 	@FXML
 	private MediaView _player;
@@ -85,17 +97,18 @@ public class MainMenuController implements Initializable{
 
 	@FXML
 	void handleForward(ActionEvent event) {
-		List<HBox> creations =  videoListView.getItems();
-		int i = creations.indexOf(_lastSelected)+1;
-		if (i>=creations.size()) {
-			i=0;
-		}
-		setup(creations.get(i));
+		_player.getMediaPlayer().seek( _player.getMediaPlayer().getCurrentTime().add( Duration.seconds(3)));
 	}
 
 	@FXML
 	void handleMute(ActionEvent event) {
 		if(existingPlayer()) {
+
+			if(!_muted) {
+				muteButton.setText("Unmute");
+			}else {
+				muteButton.setText("Mute");
+			}
 			_muted=!_muted;
 			_player.getMediaPlayer().setMute(_muted);
 		}
@@ -103,9 +116,10 @@ public class MainMenuController implements Initializable{
 
 
 	private boolean existingPlayer() {
-
 		return _player.getMediaPlayer()!=null;
 	}
+
+
 
 	@FXML
 	void handleSelectionChange() {
@@ -127,9 +141,6 @@ public class MainMenuController implements Initializable{
 			play();
 			break;
 		case FINISHED:
-			//todo: needs a real implementation, this currently does nothing
-			//_player.getMediaPlayer().setOnEndOfMedia(Runnable);
-
 			play();
 			break;
 		}
@@ -149,7 +160,6 @@ public class MainMenuController implements Initializable{
 
 		@Override
 		protected Void call() throws Exception {
-
 			//updateProgress(1,Main.getDuration());
 			return null;
 
@@ -159,8 +169,24 @@ public class MainMenuController implements Initializable{
 
 	private void play() {
 		_player.getMediaPlayer().play();
+		_player.getMediaPlayer().setOnEndOfMedia(new Runnable() {
+			public void run() {
+				_state=State.FINISHED;
+				Node selected;
+				if(videoListView.getSelectionModel().isEmpty()) {
+					selected = videoListView.getChildrenUnmodifiable().get(0);
+				}
+				else {
+					selected = videoListView.getSelectionModel().getSelectedItem();
+				}
+				setup((HBox) selected);
+				_multiButton.setText("Replay");
+				
+			}
+		});
 		_multiButton.setText("Pause");
 		_state= State.PLAYING;
+		System.out.println(_player.getMediaPlayer().getTotalDuration().toSeconds());
 	}
 
 	private void setup(HBox creationToPlay) {
@@ -175,43 +201,84 @@ public class MainMenuController implements Initializable{
 				return;
 			}
 			mediaUrl = new File(Main.getPathToResources() + "/VideoCreations/"+asText.getText()+".mp4").toURI().toURL();
-			_lastSelected=creationToPlay;
 			Media media = new Media(mediaUrl.toExternalForm());
 			//Create the player and set to play.
 			MediaPlayer mediaPlayer = new MediaPlayer(media);
 			mediaPlayer.setAutoPlay(false);
 			_player.setMediaPlayer(mediaPlayer);
 			_player.getMediaPlayer().setMute(_muted);
+			 mediaPlayer.setOnReady(new Runnable() {
 
-			Duration time=_player.getMediaPlayer().getCurrentTime();
-			Duration totalDuration = _player.getMediaPlayer().getTotalDuration();
+			        @Override
+			        public void run() {
+			        	setupSlider();
+			        }
+			    });
+		
+		
 			_multiButton.setText("Play");
 			_state= State.PAUSED;
-			_player.getMediaPlayer().setOnEndOfMedia(new RunBash("") {
 
+
+
+
+			_player.getMediaPlayer().currentTimeProperty().addListener(new ChangeListener<Duration>() {
+				@Override
+				public void changed(ObservableValue<? extends Duration> observable, Duration oldValue,
+						Duration newValue) {				
+					String time = "";
+					time += String.format("%02d", (int)newValue.toMinutes());
+					time += ":";
+					time += String.format("%02d", (int)newValue.toSeconds());
+					_videoTime.setText(time);
+					_slider.setValue(newValue.toMillis());
+				}
 			});
-			//_slider.valueProperty().bind(task);
-
-			//_player.getMediaPlayer().setStartTime(arg0);
-		} catch (MalformedURLException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
 	}
 
+	private void setupSlider() {
+
+		_slider.setOnDragDetected(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent arg0) {
+				_player.getMediaPlayer().pause();
+				_slider.setOnMouseReleased(new EventHandler<MouseEvent>() {
+					@Override
+					public void handle(MouseEvent arg0) {
+						_player.getMediaPlayer().seek(Duration.millis(_slider.getValue()));
+						_player.getMediaPlayer().play();
+						_slider.removeEventHandler(MouseEvent.MOUSE_RELEASED, this);
+					}
+				});
+
+			}
+		});	
+		_slider.setOnMousePressed(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent arg0) {
+				_player.getMediaPlayer().seek(Duration.millis(_slider.getValue()));
+				_player.getMediaPlayer().play();
+			}
+		});
+		_slider.setMax(_player.getMediaPlayer().getTotalDuration().toMillis());
+	}
+
 	@FXML
 	void handleBackward(ActionEvent event) {
-		List<HBox> creations =  videoListView.getItems();
-		int i = creations.indexOf(_lastSelected)-1;
-		if (i<0) {
-			i=creations.size()-1;
-		}
-		setup(creations.get(i));
+		_player.getMediaPlayer().seek( _player.getMediaPlayer().getCurrentTime().add( Duration.seconds(-3)));
 	}
 
 	@FXML
 	void handleCreate() {
+
+		if(_player.getMediaPlayer() !=null) {
+			_player.getMediaPlayer().dispose();
+		}
 		Main.changeScene("CreateMenu.fxml", this);
 	}
 
@@ -245,11 +312,11 @@ public class MainMenuController implements Initializable{
 
 				try {
 					_creations = bash.get();
-					
-						for(String image:_creations) {
+
+					for(String image:_creations) {
 						System.out.println(image);
-						}
-				
+					}
+
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -270,7 +337,8 @@ public class MainMenuController implements Initializable{
 				}
 			}
 		});
+		//setupSlider();
 	}
-	
-	
+
+
 }

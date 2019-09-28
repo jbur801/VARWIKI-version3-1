@@ -21,11 +21,13 @@ public class RunBash extends Task<List<String>>{
 	private List<String> _stdOut = new ArrayList<String>();
 	private ProcessBuilder _pb;
 	private String _stdError;
+	private int exitStatus;
 
 	public RunBash(String command){
 		_command = command;
 		_pb = new ProcessBuilder("bash", "-c", _command);
 		
+		System.out.println(_command);
 		//sets the working directory of the processbuilder to be in the current folder. There is a problem with open jdk where default wd is home. oracle does not have this problem
 		_pb.directory(new File(ClassLoader.getSystemClassLoader().getResource(".").getPath()));
 	}
@@ -40,8 +42,7 @@ public class RunBash extends Task<List<String>>{
 
 			Process process = _pb.start();
 
-			while(process.isAlive()) {	
-			}
+			exitStatus=process.waitFor();
 			BufferedReader stdError = new BufferedReader(new InputStreamReader(process.getErrorStream()));
 			_stdError=stdError.readLine();
 			BufferedReader stdOut = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -50,8 +51,8 @@ public class RunBash extends Task<List<String>>{
 			while ((line = stdOut.readLine()) != null) {
 				_stdOut.add(line);
 			}
-
-			//System.out.println(_stdOut);
+			System.out.println(_stdError);
+			System.out.println(_stdOut);
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -61,6 +62,10 @@ public class RunBash extends Task<List<String>>{
 
 	public String returnError() {
 		return _stdError;
+	}
+	
+	public int getExitStatus() {
+		return exitStatus;
 	}
 }
 
