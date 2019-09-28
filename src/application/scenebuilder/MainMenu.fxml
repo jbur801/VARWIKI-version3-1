@@ -6,6 +6,7 @@
 <?import javafx.scene.control.Slider?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
+
 <?import javafx.scene.media.MediaView?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
@@ -18,20 +19,20 @@
             <ListView fx:id="videoListView" onMouseClicked="#handleSelectionChange" prefHeight="382.0" prefWidth="301.0" />
          </content>
       </ScrollPane>
-      <AnchorPane fx:id="player" layoutX="352.0" layoutY="113.0" prefHeight="425.0" prefWidth="0.0">
+      <AnchorPane fx:id="player" layoutX="351.0" layoutY="151.0" prefHeight="373.0" prefWidth="391.0" style="-fx-background-color: black;">
          <children>
-            <MediaView fx:id="_player" fitHeight="400.0" fitWidth="400.0" layoutX="21.0" layoutY="13.0" onMouseClicked="#handleVideoMultiButton" />
-            <Slider fx:id="_slider" blockIncrement="0.0" layoutX="18.0" layoutY="342.0" majorTickUnit="1000.0" max="1000.0" minorTickCount="100" prefHeight="41.0" prefWidth="386.0" showTickMarks="true" snapToTicks="true" />
+            <MediaView fx:id="_player" fitHeight="300.0" fitWidth="300.0" layoutX="46.0" layoutY="14.0" onMouseClicked="#handleVideoMultiButton" />
+            <HBox layoutX="107.0" layoutY="342.0" prefHeight="26.0" prefWidth="178.0">
+               <children>
+                  <Button fx:id="backwardButton" mnemonicParsing="false" onAction="#handleBackward" text="&lt;&lt;" />
+                  <Button fx:id="_multiButton" defaultButton="true" mnemonicParsing="false" onAction="#handleVideoMultiButton" text="Play" />
+                  <Button fx:id="forwardButton" mnemonicParsing="false" onAction="#handleForward" text="&gt;&gt;" />
+                  <Button fx:id="muteButton" mnemonicParsing="false" onAction="#handleMute" text="Mute" />
+               </children>
+            </HBox>
+            <Slider fx:id="_slider" blockIncrement="0.0" layoutX="44.0" layoutY="316.0" majorTickUnit="1000.0" max="1.0" minorTickCount="100" prefHeight="39.0" prefWidth="324.0" showTickMarks="true" snapToTicks="true" />
+            <Text fx:id="_videoTime" fill="WHITE" layoutX="26.0" layoutY="367.0" strokeType="OUTSIDE" strokeWidth="0.0" text="00:00" />
          </children></AnchorPane>
-      <HBox layoutX="443.0" layoutY="533.0" prefHeight="49.0" prefWidth="243.0">
-         <children>
-            <Text fx:id="_videoTime" strokeType="OUTSIDE" strokeWidth="0.0" text="00:00" />
-            <Button fx:id="backwardButton" mnemonicParsing="false" onAction="#handleBackward" text="&lt;&lt;" />
-            <Button fx:id="_multiButton" defaultButton="true" mnemonicParsing="false" onAction="#handleVideoMultiButton" text="Play" />
-            <Button fx:id="forwardButton" mnemonicParsing="false" onAction="#handleForward" text="&gt;&gt;" />
-            <Button fx:id="muteButton" mnemonicParsing="false" onAction="#handleMute" text="Mute" />
-         </children>
-      </HBox>
       <Button fx:id="deleteButton" layoutX="14.0" layoutY="558.0" mnemonicParsing="false" onAction="#handleDeleteVideo" text="Delete" />
       <Text layoutX="88.0" layoutY="83.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Welcome To VARWIKI">
          <font>

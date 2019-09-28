@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.media.MediaView?>
+
+
+<AnchorPane prefHeight="229.0" prefWidth="255.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/11.0.1" fx:controller="application.scenebuilder.MediaBox">
+   <children>
+      <AnchorPane layoutX="-80.0" layoutY="-169.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <MediaView fitHeight="200.0" fitWidth="200.0" layoutX="28.0" layoutY="15.0" AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="28.0" AnchorPane.rightAnchor="27.0" AnchorPane.topAnchor="15.0" />
+            <Slider layoutX="14.0" layoutY="199.0" prefHeight="16.0" prefWidth="225.0" AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="60.0" AnchorPane.rightAnchor="30.0" />
+            <Button layoutX="21.0" layoutY="186.0" mnemonicParsing="false" prefHeight="27.0" prefWidth="10.0" text="Button" />
+         </children>
+      </AnchorPane>
+   </children>
+</AnchorPane>
