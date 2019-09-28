@@ -169,6 +169,7 @@ public class MainMenuController implements Initializable{
 
 	private void play() {
 		_player.getMediaPlayer().play();
+
 		_player.getMediaPlayer().setOnEndOfMedia(new Runnable() {
 			public void run() {
 				_state=State.FINISHED;
@@ -182,6 +183,7 @@ public class MainMenuController implements Initializable{
 				setup((HBox) selected);
 				_multiButton.setText("Replay");
 				
+
 			}
 		});
 		_multiButton.setText("Pause");
@@ -218,9 +220,6 @@ public class MainMenuController implements Initializable{
 		
 			_multiButton.setText("Play");
 			_state= State.PAUSED;
-
-
-
 
 			_player.getMediaPlayer().currentTimeProperty().addListener(new ChangeListener<Duration>() {
 				@Override
