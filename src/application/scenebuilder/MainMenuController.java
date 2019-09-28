@@ -227,7 +227,7 @@ public class MainMenuController implements Initializable{
 			//_slider.valueProperty().bind(task);
 
 			//_player.getMediaPlayer().setStartTime(arg0);
-		} catch (MalformedURLException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

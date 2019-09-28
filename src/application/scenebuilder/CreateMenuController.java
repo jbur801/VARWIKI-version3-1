@@ -255,7 +255,7 @@ public class CreateMenuController implements Initializable {
 	private void markImages(List<String> images) {
 		for (String path: images) {
 			System.out.println(path);
-			RunBash mark= new RunBash("ffmpeg -i ./resources/temp/images/" + path + " -vf \"drawtext=text='"+ videoName.getText() + "':fontcolor=white:fontsize=75:x=100:y=100:\" ./resources/temp/" + path);
+			RunBash mark= new RunBash("ffmpeg -i ./resources/temp/images/" + path + " -vf \"drawtext=text='"+ _term + "':fontcolor=white:fontsize=75:x=100:y=100:\" ./resources/temp/" + path);
 			_team.submit(mark);
 		}
 	}

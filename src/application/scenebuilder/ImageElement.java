@@ -40,7 +40,8 @@ public class ImageElement extends AnchorPane{
           throw new RuntimeException(exception); 
        } 
         	_name = imageName + ".jpg";
-        	String imagePath = Main.getPathToResources() + _name;
+        	String imagePath = Main.getPathToResources() +"/temp/images/"+ _name;
+        	System.out.println(imagePath);
         	URL imageURL;
 			try {
 				imageURL = new File(imagePath).toURI().toURL();
