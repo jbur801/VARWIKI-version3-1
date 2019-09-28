@@ -16,6 +16,6 @@ slf4j-nop-1.7.26.jar
 (THE ABOVE LIBRARIES CAN BE FOUND THE IN 206_FlickrExample ACP PROJECT)
 
 ## Flickr API Keys
-add txt file containing API keys into folder: "./resources"   
-this should be relative to the executable file.
+add txt file containing API keys into folder: "./resources/flickr-api-keys.txt"   
+This should be relative to the executable jar file.
 
