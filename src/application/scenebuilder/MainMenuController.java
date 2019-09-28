@@ -180,6 +180,14 @@ public class MainMenuController implements Initializable{
 		_multiButton.setText("Pause");
 		_state= State.PLAYING;
 		_slider.setMax(_player.getMediaPlayer().getTotalDuration().toSeconds());
+		_slider.setOnMousePressed(new EventHandler<MouseEvent>() {
+
+			@Override
+			public void handle(MouseEvent arg0) {
+				 _player.getMediaPlayer().seek(Duration.seconds(_slider.getValue()));
+			}
+			
+		});
 	}
 
 	private void setup(HBox creationToPlay) {
