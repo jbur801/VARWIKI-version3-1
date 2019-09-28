@@ -104,8 +104,8 @@ public class CreateMenuController implements Initializable {
 
 	@FXML
 	private TextField videoName;
-	
-	
+
+
 	private Stage _stage;
 
 	/**
@@ -141,9 +141,16 @@ public class CreateMenuController implements Initializable {
 	@FXML
 	void handleCreate() {
 		if(_runningThread) {
+			error("Please Wait for Processes to Finish");
 			return;
 		}
-
+		if(_term.isEmpty()) {
+			error("No topic Searched");
+			return;
+		}else if(_audioList.isEmpty()){
+			error("No Audio selected for Creation");
+			return;
+		}
 
 		_videoName = videoName.getText();
 
@@ -227,7 +234,7 @@ public class CreateMenuController implements Initializable {
 								videoMaker();
 								createVideo2 = new RunBash("ffmpeg -i ./resources/temp/"+name +".mp4 -i ./resources/temp/output.mp3 -c:v copy -c:a aac -strict experimental "
 										+ "./resources/VideoCreations/"+name+".mp4  &> /dev/null");
-								
+
 							}
 							_team.submit(createVideo2);
 							_runningThread = true;
@@ -261,12 +268,20 @@ public class CreateMenuController implements Initializable {
 			_team.submit(mark);
 		}
 	}
-	
-	
-	
+
+
+
 	@FXML
 	void handleReturn() {
-		Main.changeScene("MainMenu.fxml", this);
+		Alert alert = new Alert(AlertType.CONFIRMATION);
+		alert.setTitle("Are you sure?");
+		alert.setHeaderText("Unsaved work will be lost");
+		alert.setContentText("Do you still want to EXIT?");
+		Optional<ButtonType> result = alert.showAndWait();
+		if(result.get() == ButtonType.OK) {
+			Main.changeScene("MainMenu.fxml", this);
+		}
+
 	}
 
 	private void initializeSetImages() {
@@ -295,7 +310,7 @@ public class CreateMenuController implements Initializable {
 	@FXML
 	void handleImages() {
 		//yeap i really did it
-		
+
 		if(_searchButton.isVisible()==true) {
 			error("please search for a subject first");
 			return;
@@ -504,7 +519,7 @@ public class CreateMenuController implements Initializable {
 
 		RunBash createFile = new RunBash("touch ./resources/temp/cmd.txt ; echo -e \""+text+ "\" > ./resources/temp/cmd.txt");
 		_team.submit(createFile);
-		
+
 		/*
 		try {
 			System.out.println(cmd.getAbsolutePath());
@@ -519,7 +534,7 @@ public class CreateMenuController implements Initializable {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		*/
+		 */
 
 
 
@@ -533,6 +548,19 @@ public class CreateMenuController implements Initializable {
 
 
 
+	@FXML
+	void handleReset(ActionEvent event) {
+		Alert alert = new Alert(AlertType.CONFIRMATION);
+		alert.setTitle("Are you sure?");
+		alert.setHeaderText("Unsaved work will be lost");
+		alert.setContentText("Do you still want to RESET?");
+		Optional<ButtonType> result = alert.showAndWait();
+
+		if(result.get() == ButtonType.OK) {
+			Main.changeScene("CreateMenu.fxml", this);
+		}
+
+	}
 
 
 	/**
