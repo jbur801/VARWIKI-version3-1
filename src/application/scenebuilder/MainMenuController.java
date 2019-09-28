@@ -21,6 +21,7 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -40,6 +41,7 @@ import javafx.scene.media.MediaView;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import jdk.jfr.EventType;
 import application.*;
 
 public class MainMenuController implements Initializable{
@@ -56,7 +58,6 @@ public class MainMenuController implements Initializable{
 
 	private ObservableList<HBox> _videoList = FXCollections.observableArrayList();
 
-	private HBox _lastSelected;
 	private State _state = State.EMPTY;
 	@FXML
 	private Button createButton;
@@ -118,6 +119,8 @@ public class MainMenuController implements Initializable{
 		return _player.getMediaPlayer()!=null;
 	}
 
+
+
 	@FXML
 	void handleSelectionChange() {
 		HBox currentSelection = (HBox) videoListView.getSelectionModel().getSelectedItem();
@@ -170,21 +173,22 @@ public class MainMenuController implements Initializable{
 		_player.getMediaPlayer().setOnEndOfMedia(new Runnable() {
 			public void run() {
 				_state=State.FINISHED;
-				setup((HBox) videoListView.getSelectionModel().getSelectedItem());
-				_multiButton.setText("Play");
+				Node selected;
+				if(videoListView.getSelectionModel().isEmpty()) {
+					selected = videoListView.getChildrenUnmodifiable().get(0);
+				}
+				else {
+					selected = videoListView.getSelectionModel().getSelectedItem();
+				}
+				setup((HBox) selected);
+				_multiButton.setText("Replay");
+				
+
 			}
 		});
 		_multiButton.setText("Pause");
 		_state= State.PLAYING;
-		_slider.setMax(_player.getMediaPlayer().getTotalDuration().toSeconds());
-		_slider.setOnMousePressed(new EventHandler<MouseEvent>() {
-
-			@Override
-			public void handle(MouseEvent arg0) {
-				_player.getMediaPlayer().seek(Duration.seconds(_slider.getValue()));
-			}
-
-		});
+		System.out.println(_player.getMediaPlayer().getTotalDuration().toSeconds());
 	}
 
 	private void setup(HBox creationToPlay) {
@@ -199,16 +203,21 @@ public class MainMenuController implements Initializable{
 				return;
 			}
 			mediaUrl = new File(Main.getPathToResources() + "/VideoCreations/"+asText.getText()+".mp4").toURI().toURL();
-			_lastSelected=creationToPlay;
 			Media media = new Media(mediaUrl.toExternalForm());
 			//Create the player and set to play.
 			MediaPlayer mediaPlayer = new MediaPlayer(media);
 			mediaPlayer.setAutoPlay(false);
 			_player.setMediaPlayer(mediaPlayer);
 			_player.getMediaPlayer().setMute(_muted);
+			 mediaPlayer.setOnReady(new Runnable() {
 
-			Duration time=_player.getMediaPlayer().getCurrentTime();
-			Duration totalDuration = _player.getMediaPlayer().getTotalDuration();
+			        @Override
+			        public void run() {
+			        	setupSlider();
+			        }
+			    });
+		
+		
 			_multiButton.setText("Play");
 			_state= State.PAUSED;
 
@@ -221,17 +230,41 @@ public class MainMenuController implements Initializable{
 					time += ":";
 					time += String.format("%02d", (int)newValue.toSeconds());
 					_videoTime.setText(time);
-					_slider.setValue((int)newValue.toSeconds());
+					_slider.setValue(newValue.toMillis());
 				}
 			});
-			//_slider.valueProperty().bind(task);
-
-			//_player.getMediaPlayer().setStartTime(arg0);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
+	}
+
+	private void setupSlider() {
+
+		_slider.setOnDragDetected(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent arg0) {
+				_player.getMediaPlayer().pause();
+				_slider.setOnMouseReleased(new EventHandler<MouseEvent>() {
+					@Override
+					public void handle(MouseEvent arg0) {
+						_player.getMediaPlayer().seek(Duration.millis(_slider.getValue()));
+						_player.getMediaPlayer().play();
+						_slider.removeEventHandler(MouseEvent.MOUSE_RELEASED, this);
+					}
+				});
+
+			}
+		});	
+		_slider.setOnMousePressed(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent arg0) {
+				_player.getMediaPlayer().seek(Duration.millis(_slider.getValue()));
+				_player.getMediaPlayer().play();
+			}
+		});
+		_slider.setMax(_player.getMediaPlayer().getTotalDuration().toMillis());
 	}
 
 	@FXML
@@ -241,7 +274,7 @@ public class MainMenuController implements Initializable{
 
 	@FXML
 	void handleCreate() {
-		
+
 		if(_player.getMediaPlayer() !=null) {
 			_player.getMediaPlayer().dispose();
 		}
@@ -303,6 +336,7 @@ public class MainMenuController implements Initializable{
 				}
 			}
 		});
+		//setupSlider();
 	}
 
 
