@@ -181,6 +181,7 @@ public class CreateMenuController implements Initializable {
 								videoMaker();
 								createVideo2 = new RunBash("ffmpeg");
 							}
+							_team.submit(createVideo2);
 							_runningThread = true;
 							createVideo2.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 								@Override
