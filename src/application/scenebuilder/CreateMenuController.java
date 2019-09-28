@@ -1,7 +1,11 @@
 package application.scenebuilder;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutionException;
@@ -34,7 +38,9 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.MediaView;
 import javafx.scene.text.Text;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import application.*;
 
 public class CreateMenuController implements Initializable {
@@ -95,8 +101,7 @@ public class CreateMenuController implements Initializable {
 
 	@FXML
 	private TextField videoName;
-	private boolean _manual;
-	private Scene _scene;
+	private Stage _stage;
 
 	/**
 	 * this initialises choice box to allow for the selection of different festival voices
@@ -107,8 +112,26 @@ public class CreateMenuController implements Initializable {
 		ObservableList<String> voices = FXCollections.observableArrayList();
 		voices.addAll("Default","(voice_akl_nz_cw_cg_cg)","(voice_akl_nz_jdt_diphone)");
 		_festivalVoice.setItems(voices);
-		_manual=false;
 	}
+
+	@FXML 
+	void handleCreate2() {
+		if(_runningThread) {
+			return;
+		}
+		String name = videoName.getText();
+		if(name.isEmpty()) {
+			error("Creation must have a name");
+			return;
+		}
+		if(_images.isSelected()) {
+			List<String> images = getSelectedImages();
+			System.out.println(images.size());
+			textFileBuilder(images,9);
+			videoMaker();
+		}
+	}
+
 
 	@FXML
 	void handleCreate() {
@@ -120,6 +143,7 @@ public class CreateMenuController implements Initializable {
 			error("Creation must have a name");
 			return;
 		}
+		List<String> images = getSelectedImages();
 		String audioFileNames="";
 		for(Node audio:_audioList) {
 			audioFileNames = audioFileNames+audio.toString()+".wav ";
@@ -138,19 +162,27 @@ public class CreateMenuController implements Initializable {
 					public void handle(WorkerStateEvent event) {
 						_runningThread=false;
 						double audioLength;
-
+						
 						try {
 							audioLength = Double.parseDouble(audioLengthSoxi.get().get(0));
-							RunBash createVideo = new RunBash("ffmpeg -i ./resources/temp/output.wav -vn -ar 44100 -ac 2 -b:a 192k ./resources/temp/output.mp3 &> /dev/null "
+							RunBash createVideo1 = new RunBash("ffmpeg -i ./resources/temp/output.wav -vn -ar 44100 -ac 2 -b:a 192k ./resources/temp/output.mp3 &> /dev/null "
 									+ "; ffmpeg -f lavfi -i color=c=blue:s=320x240:d="+audioLength 
 									+ " -vf \"drawtext=fontfile=/path/to/font.ttf:fontsize=30: "
-									+ "fontcolor=white:x=(w-text_w)/2:y=(h-text_h)/2:text="+_term+"\" ./resources/temp/"+name+".mp4 &> /dev/null "
-									+ "; ffmpeg -i ./resources/temp/"+name +".mp4 -i ./resources/temp/output.mp3 -c:v copy -c:a aac -strict experimental "
+									+ "fontcolor=white:x=(w-text_w)/2:y=(h-text_h)/2:text="+_term+"\" ./resources/temp/"+name+".mp4 &> /dev/null ;");
+						
+							_team.submit(createVideo1);
+							RunBash createVideo2;
+							if(!_images.isSelected()) {
+								createVideo2 = new RunBash("ffmpeg -i ./resources/temp/"+name +".mp4 -i ./resources/temp/output.mp3 -c:v copy -c:a aac -strict experimental "
 									+ "./resources/VideoCreations/"+name+".mp4  &> /dev/null");
-
-							_team.submit(createVideo);
+							} else {
+								markImages(images);
+								textFileBuilder(images,audioLength);
+								videoMaker();
+								createVideo2 = new RunBash("ffmpeg");
+							}
 							_runningThread = true;
-							createVideo.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+							createVideo2.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 								@Override
 								public void handle(WorkerStateEvent event) {
 									_runningThread=false;
@@ -167,6 +199,16 @@ public class CreateMenuController implements Initializable {
 			}
 		});
 	}
+	
+	//ffmpeg -i ./resources/temp/images/moth-6.jpg -vf drawtext="text='MOTH':fontcolor=white:fontsize=75:x=1002:y=100:" ./resources/temp/images/moth-6.jpg
+
+	private void markImages(List<String> images) {
+		for (String path: images) {
+			System.out.println(path);
+			RunBash mark= new RunBash("ffmpeg -i ./resources" + path + "-vf \"drawtext=text='"+ videoName.getText() + "':fontcolor=white:fontsize=75:x=1002:y=100:\" ./resources" + path);
+			_team.submit(mark);
+		}
+	}
 
 	@FXML
 	void handleReturn() {
@@ -179,11 +221,16 @@ public class CreateMenuController implements Initializable {
 		loader.setLocation(getClass().getResource("SetImages.fxml"));
 		Parent layout; 
 		try {
-			_controller=loader.getController();
-			layout = loader.load();
-			_scene = new Scene(layout);
 
-			_manual = true;
+			layout = loader.load();
+			_controller=loader.getController();
+
+			_controller.construct(this);
+			Scene scene = new Scene(layout);
+			_stage = new Stage();
+			_stage.setScene(scene);
+			_stage.initModality(Modality.APPLICATION_MODAL);
+			_stage.initStyle(StageStyle.UNDECORATED);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -201,16 +248,15 @@ public class CreateMenuController implements Initializable {
 			error("busy");
 			return;
 		}
-		if (_controller==null) {
-			initializeSetImages();
-		}
 		popupSetImages();
 	}
-
+	public void popdownSetImages() {
+		_stage.hide();;
+	}
 	private void popupSetImages() {
-		Stage imageStage = new Stage();
-		imageStage.setScene(_scene);
-		imageStage.show();
+
+
+		_stage.show();
 	}
 
 	@FXML
@@ -297,12 +343,15 @@ public class CreateMenuController implements Initializable {
 					searchTextArea.setEditable(false);
 					_searchButton.setVisible(false);
 					videoName.setText(_term);
+					_imageButton.setText("loading...");
 					GetFlickr imageDown = new GetFlickr(searchTextArea.getText(), 9);
 					_team.submit(imageDown);
 					imageDown.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 						@Override
 						public void handle(WorkerStateEvent event) {
 							_runningThread = false;
+							initializeSetImages();
+							_imageButton.setText("Modify display");
 						}
 					});
 				} catch (InterruptedException | ExecutionException e) {
@@ -348,8 +397,6 @@ public class CreateMenuController implements Initializable {
 				}
 			});
 		}
-
-
 	}
 
 	@FXML
@@ -377,6 +424,65 @@ public class CreateMenuController implements Initializable {
 	}
 
 
+	private List<String> getSelectedImages() {
+		List<String> images = new ArrayList<String>();
+		List<ImageElement> elements = _controller.getSelectedImages();
+		System.out.println( elements.size());
+		for(ImageElement name: elements) {
+			images.add(name.toString());
+		}
+		return images;
+	}
+
+	private void textFileBuilder(List<String> images, double totalDuration) {
+		double duration = totalDuration/images.size();
+		String stringDuration = Double.toString(duration);
+		String text = ""; 	
+		File cmd = new File(Main.getPathToResources() + "/temp", "cmd.txt");
+		cmd.setWritable(true);
+
+		for(String name:images) {
+			text= text +"file './resources" + name +"'\nduration " + stringDuration + "\n";
+		}
+		try {
+			System.out.println(cmd.getAbsolutePath());
+			System.out.println(images.size());
+			System.out.println(text);
+			cmd.createNewFile();
+			FileWriter writer = new FileWriter(cmd);
+			BufferedWriter idkanymore = new BufferedWriter(writer);
+			idkanymore.write(text);
+			idkanymore.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+
+
+	}
+	//ffmpeg -f concat -safe 0 -i ./resources/temp/cmd.txt -vsync vfr -pix_fmt yuv420p -y -an ./resources/temp/hey.mp4 -vf "pad=ceil(iw/2)
+
+	private void videoMaker() {
+		RunBash makeVideo = new RunBash("ffmpeg -f concat -safe 0 -i ./resources/temp/input.txt -vsync vfr -pix_fmt yuv420p ./resources/temp/"+ videoName.getText() +".mp4");
+		_team.submit(makeVideo);
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	/**
 	 * helper method that creates a popup when an error occurs
 	 * @param msg
@@ -388,5 +494,7 @@ public class CreateMenuController implements Initializable {
 		alert.setContentText(msg);
 		alert.showAndWait();
 	}
+
+
 
 }

@@ -75,7 +75,7 @@ public class GetFlickr extends Task<Void>{
 	
 	private String getKey(String key) throws Exception {
 
-		String config = System.getProperty("user.dir")+ "/flickr-api-keys.txt"; 
+		String config = Main.getPathToResources() + "/flickr-api-keys.txt"; 
 		File file = new File(config); 
 		BufferedReader br = new BufferedReader(new FileReader(file)); 
 		

@@ -34,7 +34,7 @@ public class SetImagesController implements Initializable{
 	private ExecutorService _team = Executors.newSingleThreadExecutor(); 
 	private List<String> _images = new ArrayList<String>();
 	private ObservableList<ImageElement> _imageList;
-	
+	private CreateMenuController _parent;
 
 
 	@Override
@@ -56,6 +56,7 @@ public class SetImagesController implements Initializable{
 					int i =0;
 					for(String image:_images) {
 						ImageElement displayImage = new ImageElement(image);
+						_imageList.add(displayImage);
 						_mainPane.add(displayImage, i%3, i/3);
 						i++;	
 					}
@@ -65,8 +66,18 @@ public class SetImagesController implements Initializable{
 		});
 	}
 	
+	public void construct(CreateMenuController parent) {
+		_parent=parent;
+	}
+	
+	@FXML
+	public void done() {
+		_parent.popdownSetImages();
+	}
+	
 	public List<ImageElement> getSelectedImages(){
 		List<ImageElement> selected = new ArrayList<ImageElement>();
+		System.out.println(_imageList.size());
 		for(ImageElement i:_imageList) {
 			if(i.isSelected()) {
 				selected.add(i);
