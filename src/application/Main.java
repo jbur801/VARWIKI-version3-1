@@ -1,5 +1,7 @@
 package application;
 
+import java.io.File;
+import java.net.URISyntaxException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -38,11 +40,6 @@ public class Main extends Application {
 		launch();
 	}
 	
-	/**
-	 * used to change FXML scenebuilder scenes
-	 * @param fxml
-	 * @param location
-	 */
 	public static void changeScene(String fxml, Object location) {
 		initiateFileSystem();
 		try {
@@ -57,17 +54,32 @@ public class Main extends Application {
 			}
 	}
 	
-	/**
-	 * method creates and clears any temp files used in the process of creation
-	 */
 	public static void initiateFileSystem() {
+		_team.submit(new RunBash("c"));
 		_team.submit(new RunBash("rm -r ./resources/temp"));
 		_team.submit(new RunBash("mkdir ./resources ./resources/VideoCreations ./resources/temp ./resources/temp/images"));
+		String creationsDir;
+		try {
+			creationsDir = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getAbsolutePath();
+			System.out.println("ur answer: " + creationsDir);
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	
 	}
 
 
 	public static String getPathToResources() {
-		return System.getProperty("user.dir") + "/bin/resources";
+		 try {
+			 String dir = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getAbsolutePath();
+			 dir = dir.substring(0, dir.lastIndexOf("/"));
+			return dir + "/resources";
+		} catch (URISyntaxException e) {
+			System.out.println("I/O issue, unexpected setup");
+			e.printStackTrace();
+		}
+		 return System.getProperty("user.dir") + "/bin/resources";
 	}
 
 	public static void clearImages() {

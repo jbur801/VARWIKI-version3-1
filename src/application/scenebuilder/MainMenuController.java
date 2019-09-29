@@ -90,9 +90,6 @@ public class MainMenuController implements Initializable{
 
 	@FXML
 	private Button muteButton;
-	
-	@FXML
-	private Button _exitButton;
 
 	@FXML
 	private ListView<HBox> videoListView;
@@ -128,23 +125,13 @@ public class MainMenuController implements Initializable{
 	}
 
 
-	@FXML
-	void handleExit(ActionEvent event) {
-		Alert alert = new Alert(AlertType.CONFIRMATION);
-		alert.setTitle("Are you sure?");
-		alert.setHeaderText("Are you sure you want to leave?");
-		alert.setContentText("You are about to EXIT this application");
-		Optional<ButtonType> result = alert.showAndWait();
-
-		if(result.get() == ButtonType.OK) {
-			System.exit(0);
-		}
-	}
 
 	@FXML
 	void handleSelectionChange() {
 		HBox currentSelection = (HBox) videoListView.getSelectionModel().getSelectedItem();
+		if (currentSelection!= null){
 		setup(currentSelection);	
+		}
 	}
 
 	@FXML
@@ -265,13 +252,6 @@ public class MainMenuController implements Initializable{
 			_player.getMediaPlayer().play();
 		}
 	}
-
-	/**
-	Set<Node> a = _slider.lookupAll("*");
-	for(Node thing:a) {
-		System.out.println(thing.toString());
-	}
-	**/
 	private void setupSlider() {
 		Pane _thumb = (Pane) _slider.lookup(".thumb");
 		//StackPane _track = (StackPane) _slider.lookup(".track");
@@ -372,6 +352,8 @@ public class MainMenuController implements Initializable{
 				}
 			}
 		});
+		
+		
 		//setupSlider();
 	}
 

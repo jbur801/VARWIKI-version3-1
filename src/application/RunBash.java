@@ -4,7 +4,6 @@ package application;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,19 +22,15 @@ public class RunBash extends Task<List<String>>{
 	private ProcessBuilder _pb;
 	private String _stdError;
 	private int exitStatus;
+	private String _directory = "cd .. ;";
 
 	public RunBash(String command){
 		_command = command;
-		_pb = new ProcessBuilder("bash", "-c", _command);
+		_pb = new ProcessBuilder("bash", "-c",_directory +  _command);
 		
 		System.out.println(_command);
 		//sets the working directory of the processbuilder to be in the current folder. There is a problem with open jdk where default wd is home. oracle does not have this problem
-		try {
-			String pwd = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getAbsolutePath();
-			_pb.directory(new File(pwd.substring(0,pwd.lastIndexOf("/"))));
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
-		}
+		_pb.directory(new File(ClassLoader.getSystemClassLoader().getResource(".").getPath()));
 	}
 
 
@@ -57,7 +52,8 @@ public class RunBash extends Task<List<String>>{
 			while ((line = stdOut.readLine()) != null) {
 				_stdOut.add(line);
 			}
-
+			System.out.println(stdError);
+			System.out.println(stdOut);
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
