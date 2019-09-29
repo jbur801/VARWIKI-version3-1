@@ -90,7 +90,7 @@ public class MainMenuController implements Initializable{
 
 	@FXML
 	private Button muteButton;
-	
+
 	@FXML
 	private Button _exitButton;
 
@@ -187,7 +187,7 @@ public class MainMenuController implements Initializable{
 	}
 
 	private void play() {
-		
+
 		_player.getMediaPlayer().play();
 		_player.getMediaPlayer().seek(Duration.millis(_slider.getValue()));
 		System.out.println(_player.getMediaPlayer().getCurrentTime().toSeconds());
@@ -213,14 +213,14 @@ public class MainMenuController implements Initializable{
 			mediaPlayer.setAutoPlay(false);
 			_player.setMediaPlayer(mediaPlayer);
 			_player.getMediaPlayer().setMute(_muted);
-			 mediaPlayer.setOnReady(new Runnable() {
-			        @Override
-			        public void run() {
-			        	setupSlider();
-			        }
-			    });
-		
-		
+			mediaPlayer.setOnReady(new Runnable() {
+				@Override
+				public void run() {
+					setupSlider();
+				}
+			});
+
+
 			_multiButton.setText("Play");
 			_state= State.PAUSED;
 
@@ -229,7 +229,7 @@ public class MainMenuController implements Initializable{
 					_state=State.PAUSED;
 					_player.getMediaPlayer().stop();
 					_multiButton.setText("Replay");
-					
+
 				}
 			});
 
@@ -243,14 +243,14 @@ public class MainMenuController implements Initializable{
 					time += String.format("%02d", (int)newValue.doubleValue()/1000);
 					_videoTime.setText(time);
 				}
-				
+
 			});
 			_player.getMediaPlayer().currentTimeProperty().addListener(new ChangeListener<Duration>() {
 				@Override
 				public void changed(ObservableValue<? extends Duration> observable, Duration oldValue,
 						Duration newValue) {				
-				
-					
+
+
 					_slider.setValue(newValue.toMillis());
 				}
 			});
@@ -270,7 +270,7 @@ public class MainMenuController implements Initializable{
 	private void setupSlider() {
 		Pane _thumb = (Pane) _slider.lookup(".thumb");
 		//StackPane _track = (StackPane) _slider.lookup(".track");
-		
+
 		_thumb.setOnDragDetected(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent arg0) {
@@ -305,10 +305,14 @@ public class MainMenuController implements Initializable{
 
 	@FXML
 	void handleCreate() {
-
-		if(_player.getMediaPlayer() !=null) {
-			_player.getMediaPlayer().dispose();
+		try {
+			if(_player.getMediaPlayer() !=null) {
+				_player.getMediaPlayer().dispose();
+			}
+		}catch(Exception e) {
+			//e.printStackTrace();
 		}
+
 		Main.changeScene("CreateMenu.fxml", this);
 	}
 
