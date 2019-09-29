@@ -15,6 +15,10 @@ local.properties
 .loadpath
 .recommenders
 
+# ignore video creation files
+resources/temp/
+resources/VideoCreations/
+
 # External tool builders
 .externalToolBuilders/
 
