@@ -1,5 +1,7 @@
 package application;
 
+import java.io.File;
+import java.net.URISyntaxException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -67,7 +69,15 @@ public class Main extends Application {
 
 
 	public static String getPathToResources() {
-		return System.getProperty("user.dir") + "/bin/resources";
+		 try {
+			 String dir = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getAbsolutePath();
+			 dir = dir.substring(0, dir.lastIndexOf("/"));
+			return dir + "/resources";
+		} catch (URISyntaxException e) {
+			System.out.println("I/O issue, unexpected setup");
+			e.printStackTrace();
+		}
+		 return System.getProperty("user.dir") + "/bin/resources";
 	}
 
 	public static void clearImages() {
