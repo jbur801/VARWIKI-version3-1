@@ -29,7 +29,7 @@ public class ImageElement extends AnchorPane{
     private String _name;
 
     public ImageElement(String imageName) {
-    	super();
+    	//super();
     	FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("ImageElement.fxml"));
         //fxmlLoader.setLocation(getClass().getResource("ImageElement.fxml"));
         fxmlLoader.setRoot(this);
@@ -53,15 +53,7 @@ public class ImageElement extends AnchorPane{
 				e.printStackTrace();
 				
 			}
-            /**
-            parentProperty().addListener(new ChangeListener() {
-                @Override
-                public void changed(ObservableValue ov, Object oldP, Object newP) {
-                    root = (Parent) newP;
-                    registerDragEvent();
-                }
-            });
-            **/
+
     }
 
 	public boolean isSelected() {

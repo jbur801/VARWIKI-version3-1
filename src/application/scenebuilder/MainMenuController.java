@@ -92,208 +92,56 @@ public class MainMenuController implements Initializable{
 	private Button muteButton;
 
 	@FXML
+	private HBox _hbox;
+
+	@FXML
 	private ListView<HBox> videoListView;
 	private boolean _muted = false;
 
-	@FXML
-	void handleSlider(ActionEvent event) {
+	private MediaBox player_;
 
-	}
-
-	@FXML
-	void handleForward(ActionEvent event) {
-		_player.getMediaPlayer().seek( _player.getMediaPlayer().getCurrentTime().add( Duration.seconds(3)));
-	}
 
 	@FXML
 	void handleMute(ActionEvent event) {
-		if(existingPlayer()) {
 
-			if(!_muted) {
-				muteButton.setText("Unmute");
-			}else {
-				muteButton.setText("Mute");
-			}
-			_muted=!_muted;
-			_player.getMediaPlayer().setMute(_muted);
+
+		if(!_muted) {
+			muteButton.setText("Unmute");
+		}else {
+			muteButton.setText("Mute");
 		}
+		_muted=!_muted;
+		_player.getMediaPlayer().setMute(_muted);
+
 	}
 
-
-	private boolean existingPlayer() {
-		return _player.getMediaPlayer()!=null;
-	}
-
-
-
-	@FXML
-	void handleSelectionChange() {
+	private void setNewMedia() {
 		HBox currentSelection = (HBox) videoListView.getSelectionModel().getSelectedItem();
-		if (currentSelection!= null){
-		setup(currentSelection);	
-		}
-	}
-
-	@FXML
-	void handleVideoMultiButton() {		
-		switch (_state) {
-		case EMPTY:
-			setup(videoListView.getItems().get(0));
-			play();
-			break;
-		case PLAYING:
-			pause();
-			break;
-		case PAUSED:
-			play();
-			break;
-		case FINISHED:
-			play();
-			break;
-		}
-
-	}
-
-	private void pause() {
-		_multiButton.setText("Play");
-		Duration time=_player.getMediaPlayer().getCurrentTime();
-		_player.getMediaPlayer().pause();
-		_state=State.PAUSED;
-
-	}
-
-	class countTime extends Task <Void>{
-
-		@Override
-		protected Void call() throws Exception {
-			//updateProgress(1,Main.getDuration());
-			return null;
-
-		}
-
-	}
-
-	private void play() {
+		//setup(currentSelection);	
+		if( currentSelection!=null){
+		Text asText = (Text)currentSelection.getChildren().get(0);
 		
-		_player.getMediaPlayer().play();
-		_player.getMediaPlayer().seek(Duration.millis(_slider.getValue()));
-		System.out.println(_player.getMediaPlayer().getCurrentTime().toSeconds());
-		_multiButton.setText("Pause");
-		_state= State.PLAYING;
-	}
-
-	private void setup(HBox creationToPlay) {
-		if(existingPlayer()) {
-			_player.getMediaPlayer().dispose();
-		}
 		URL mediaUrl;
 		try {
-			//find media
-			Text asText = (Text) creationToPlay.getChildren().get(0);
-			if(asText.getText().contentEquals("Are you sure? ")|asText.getText().contentEquals("No more Creations")) {
-				return;
-			}
 			mediaUrl = new File(Main.getPathToResources() + "/VideoCreations/"+asText.getText()+".mp4").toURI().toURL();
-			Media media = new Media(mediaUrl.toExternalForm());
-			//Create the player and set to play.
-			MediaPlayer mediaPlayer = new MediaPlayer(media);
-			mediaPlayer.setAutoPlay(false);
-			_player.setMediaPlayer(mediaPlayer);
-			_player.getMediaPlayer().setMute(_muted);
-			 mediaPlayer.setOnReady(new Runnable() {
-			        @Override
-			        public void run() {
-			        	setupSlider();
-			        }
-			    });
-		
-		
-			_multiButton.setText("Play");
-			_state= State.PAUSED;
-
-			_player.getMediaPlayer().setOnEndOfMedia(new Runnable() {
-				public void run() {
-					_state=State.PAUSED;
-					_player.getMediaPlayer().stop();
-					_multiButton.setText("Replay");
-					
-				}
-			});
-
-			_slider.valueProperty().addListener(new ChangeListener<Number>(){
-				@Override
-				public void changed(ObservableValue<? extends Number> arg0, Number arg1, Number arg2) {
-					String time = "";
-					Double newValue = (Double)arg1;
-					time += String.format("%02d", (int)newValue.doubleValue()/60000);
-					time += ":";
-					time += String.format("%02d", (int)newValue.doubleValue()/1000);
-					_videoTime.setText(time);
-				}
-				
-			});
-			_player.getMediaPlayer().currentTimeProperty().addListener(new ChangeListener<Duration>() {
-				@Override
-				public void changed(ObservableValue<? extends Duration> observable, Duration oldValue,
-						Duration newValue) {				
-				
-					
-					_slider.setValue(newValue.toMillis());
-				}
-			});
-		} catch (Exception e) {
+			Media newMedia = new Media(mediaUrl.toExternalForm());
+			player_.setMedia(newMedia);
+		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-	}
-	private void checkPlay() {
-		if (_state == State.PLAYING) {
-			_player.getMediaPlayer().play();
 		}
 	}
-	private void setupSlider() {
-		Pane _thumb = (Pane) _slider.lookup(".thumb");
-		//StackPane _track = (StackPane) _slider.lookup(".track");
-		
-		_thumb.setOnDragDetected(new EventHandler<MouseEvent>() {
-			@Override
-			public void handle(MouseEvent arg0) {
-				_player.getMediaPlayer().pause();
-			}
-		});	
-		_thumb.setOnMouseReleased(new EventHandler<MouseEvent>() {
-			@Override
-			public void handle(MouseEvent arg0) {
-				System.out.println(_player.getMediaPlayer().getCurrentTime().toSeconds());
-				_player.getMediaPlayer().seek(Duration.millis(_slider.getValue()));
-				System.out.println(_player.getMediaPlayer().getCurrentTime().toSeconds());
-				checkPlay();
-			}
-		});
-		_slider.setOnMousePressed(new EventHandler<MouseEvent>() {
-			@Override
-			public void handle(MouseEvent arg0) {
-				System.out.println(_player.getMediaPlayer().getCurrentTime().toSeconds());
-				_player.getMediaPlayer().seek(Duration.millis(_slider.getValue()));
-				System.out.println(_player.getMediaPlayer().getCurrentTime().toSeconds());
-				checkPlay();
-			}
-		});
-		_slider.setMax(_player.getMediaPlayer().getTotalDuration().toMillis());
-	}
-
+	
 	@FXML
-	void handleBackward(ActionEvent event) {
-		_player.getMediaPlayer().seek( _player.getMediaPlayer().getCurrentTime().add( Duration.seconds(-3)));
+	void handleSelectionChange() {
+		setNewMedia();
 	}
 
+	
 	@FXML
 	void handleCreate() {
 
-		if(_player.getMediaPlayer() !=null) {
-			_player.getMediaPlayer().dispose();
-		}
 		Main.changeScene("CreateMenu.fxml", this);
 	}
 
@@ -350,10 +198,21 @@ public class MainMenuController implements Initializable{
 					}
 					videoListView.setItems(_videoList);
 				}
+				Text asText = (Text)videoListView.getItems().get(0).getChildren().get(0);
+				URL mediaUrl;
+				try {
+					mediaUrl = new File(Main.getPathToResources() + "/VideoCreations/"+asText.getText()+".mp4").toURI().toURL();
+					Media media = new Media(mediaUrl.toExternalForm());
+					player_ = new MediaBox();
+					_hbox.getChildren().add(player_);
+					videoListView.getSelectionModel().clearAndSelect(0);
+					setNewMedia();
+				} catch (MalformedURLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		});
-		
-		
 		//setupSlider();
 	}
 

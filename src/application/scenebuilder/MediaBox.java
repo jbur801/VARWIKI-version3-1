@@ -1,6 +1,7 @@
 package application.scenebuilder;
 
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
@@ -35,6 +37,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.Slider;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
@@ -42,12 +45,13 @@ import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
+import javafx.scene.shape.Polygon;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import application.*;
 
-public class MediaBox {
+public class MediaBox extends AnchorPane{
 
 
 
@@ -62,17 +66,17 @@ public class MediaBox {
 
 	@FXML
 	private Text _videoTime;
-	
+
 	@FXML
 	private MediaView view;
-	
+
 	private MediaPlayer _player;
 
 	@FXML
 	private Button backwardButton;
 
 	@FXML
-	private Button _multiButton;
+	private Polygon _playIndicator;
 
 	@FXML
 	private Button forwardButton;
@@ -84,27 +88,52 @@ public class MediaBox {
 	private ListView<HBox> videoListView;
 	private boolean _muted = false;
 	private boolean _playing;
+	private boolean _setSlider;
 
-	public MediaBox(Media media,boolean muted) {
+	public MediaBox() {
+		_setSlider = false;
+		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("MediaBox.fxml"));
+		fxmlLoader.setRoot(this);
+		fxmlLoader.setController(this);
+		try { 
+			fxmlLoader.load();
+		} catch (IOException exception) { 
+			throw new RuntimeException(exception); 
+		} 
+
+
+
+	}
+
+	public void setMedia(Media newMedia) {
 
 		//Create the player and set to play.
-		_player = new MediaPlayer(media);
-		_player.setAutoPlay(false);
-		_player.setMute(_muted);
+		if(null!=_player) {
+		_player.stop();
+		_player.dispose();
+		}
+		_player = new MediaPlayer(newMedia);
 		_player.setOnReady(new Runnable() {
 			@Override
 			public void run() {
-				setupSlider();
+				if (!_setSlider) {
+					setupSlider();
+					_setSlider = true;
+				}
+				syncSlider();
 			}
 		});
-		_multiButton.setText("Play");
+		_player.setAutoPlay(false);
+		_player.setMute(_muted);
+		_player.seek(new Duration(0));
+
 		_playing=false;
 
 		_player.setOnEndOfMedia(new Runnable() {
 			public void run() {
 				_playing=false;
 				_player.stop();
-				_multiButton.setText("Replay");
+				_playIndicator.setVisible(true);
 
 			}
 		});
@@ -113,6 +142,14 @@ public class MediaBox {
 			public void changed(ObservableValue<? extends Duration> observable, Duration oldValue,
 					Duration newValue) {				
 				_slider.setValue(newValue.toMillis());
+			}
+		});
+		_player.setOnEndOfMedia(new Runnable() {
+			public void run() {
+				_playing=false;
+				_player.stop();
+				_playIndicator.setVisible(true);
+
 			}
 		});
 	}
@@ -125,7 +162,7 @@ public class MediaBox {
 	void handleBackward(ActionEvent event) {
 		_player.seek( _player.getCurrentTime().add( Duration.seconds(-3)));
 	}
-	
+
 
 	@FXML
 	void handleMute(ActionEvent event) {
@@ -152,7 +189,7 @@ public class MediaBox {
 	}
 
 	private void pause() {
-		_multiButton.setText("Play");
+		_playIndicator.setVisible(true);
 		_player.pause();
 		_playing =false;
 
@@ -161,28 +198,33 @@ public class MediaBox {
 	private void play() {
 
 		_player.play();
-
-		_multiButton.setText("Pause");
+		_playIndicator.setVisible(false);
 		_playing = true;
 	}
 
-	
-	
+
+
 	private void checkPlay() {
 		if (_playing) {
 			_player.play();
 		}
 	}
 
+	private void syncSlider() {
+		_slider.setMax(_player.getTotalDuration().toMillis());
+		_slider.setValue(0);
+	}
+
 	private void setupSlider() {
-		Pane _thumb = (Pane) _slider.lookup(".thumb");
-		_thumb.setOnDragDetected(new EventHandler<MouseEvent>() {
+		Pane thumb = (Pane) _slider.lookup(".thumb");
+
+		thumb.setOnDragDetected(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent arg0) {
 				_player.pause();
 			}
 		});	
-		_thumb.setOnMouseReleased(new EventHandler<MouseEvent>() {
+		thumb.setOnMouseReleased(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent arg0) {
 				System.out.println(_player.getCurrentTime().toSeconds());
@@ -200,7 +242,6 @@ public class MediaBox {
 				checkPlay();
 			}
 		});
-		_slider.setMax(_player.getTotalDuration().toMillis());
 		_slider.valueProperty().addListener(new ChangeListener<Number>(){
 			@Override
 			public void changed(ObservableValue<? extends Number> arg0, Number arg1, Number arg2) {

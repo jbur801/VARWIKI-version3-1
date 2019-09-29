@@ -187,6 +187,10 @@ public class CreateMenuController implements Initializable {
 
 
 	public void createVideo() {
+		if(_audioList.isEmpty()) {
+			return ;
+					//------------------------------------------------------------------------------------------------------------------------
+		}
 		List<String> images = getSelectedImages();
 		String name = videoName.getText();
 		String audioFileNames="";
@@ -217,11 +221,10 @@ public class CreateMenuController implements Initializable {
 
 							_team.submit(createVideoAudio);
 							RunBash createVideo2;
-							if(!_images.isSelected()) {
+							if(!_images.isSelected()|images.isEmpty()) {
 								createVideo2 = new RunBash("ffmpeg -i ./resources/temp/"+name +"noImage.mp4 -i ./resources/temp/output.mp3 -c:v copy -c:a aac -strict experimental "
 										+ "./resources/VideoCreations/"+name+".mp4  &> /dev/null");
 							} else {
-								System.out.println("images");
 								markImages(images);
 								textFileBuilder(images,audioLength);
 								videoMaker();

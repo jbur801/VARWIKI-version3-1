@@ -5,7 +5,7 @@ import java.net.URISyntaxException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-
+import application.scenebuilder.MainMenuController;
 import javafx.application.Application;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
@@ -34,6 +34,7 @@ public class Main extends Application {
 				System.exit(0);
 			}
 		});		
+				
 	}
 
 	public static void main(String[] args) {
@@ -46,16 +47,16 @@ public class Main extends Application {
 			 FXMLLoader loader = new FXMLLoader();
 		        loader.setLocation(location.getClass().getResource(fxml));
 		        Parent layout = loader.load();
+		        Object controller = loader.getController();
 		        Scene scene = new Scene(layout);
 		        _stage.setScene(scene);
-		        _stage.show();
+		        _stage.show();  
 			}catch(Exception e) {
 				e.printStackTrace();
 			}
 	}
 	
 	public static void initiateFileSystem() {
-		_team.submit(new RunBash("c"));
 		_team.submit(new RunBash("rm -r ./resources/temp"));
 		_team.submit(new RunBash("mkdir ./resources ./resources/VideoCreations ./resources/temp ./resources/temp/images"));
 		String creationsDir;
@@ -79,7 +80,7 @@ public class Main extends Application {
 			System.out.println("I/O issue, unexpected setup");
 			e.printStackTrace();
 		}
-		 return System.getProperty("user.dir") + "/bin/resources";
+		 return System.getProperty("user.dir") + "/resources";
 	}
 
 	public static void clearImages() {
