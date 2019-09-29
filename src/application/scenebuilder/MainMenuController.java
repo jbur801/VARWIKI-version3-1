@@ -266,12 +266,7 @@ public class MainMenuController implements Initializable{
 		}
 	}
 
-	/**
-	Set<Node> a = _slider.lookupAll("*");
-	for(Node thing:a) {
-		System.out.println(thing.toString());
-	}
-	**/
+
 	private void setupSlider() {
 		Pane _thumb = (Pane) _slider.lookup(".thumb");
 		//StackPane _track = (StackPane) _slider.lookup(".track");

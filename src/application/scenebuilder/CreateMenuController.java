@@ -217,7 +217,6 @@ public class CreateMenuController implements Initializable {
 								createVideo2 = new RunBash("ffmpeg -i ./resources/temp/"+name +"noImage.mp4 -i ./resources/temp/output.mp3 -c:v copy -c:a aac -strict experimental "
 										+ "./resources/VideoCreations/"+name+".mp4  &> /dev/null");
 							} else {
-								System.out.println("images");
 								markImages(images);
 								textFileBuilder(images,audioLength);
 								videoMaker();

@@ -67,8 +67,6 @@ public class GetFlickr extends Task<Void>{
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
-		System.out.println("\nDone");
 		return null;
 	}
 	
