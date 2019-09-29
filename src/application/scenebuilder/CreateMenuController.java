@@ -1,8 +1,5 @@
 package application.scenebuilder;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -35,19 +32,21 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
-import javafx.scene.media.MediaView;
-import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import application.*;
 
+
+/**
+ * 
+ * @author Student
+ * This contains all functionality for creating a video.
+ * 
+ *
+ */
 public class CreateMenuController implements Initializable {
-
-
 
 	private ObservableList<HBox> _audioList = FXCollections.observableArrayList();
 	private String _term = "";
@@ -55,13 +54,13 @@ public class CreateMenuController implements Initializable {
 	private boolean _runningThread;
 	private int audioCount=0;
 	private SetImagesController _controller;
-	private String _videoName;
+	private String __videoName;
 
 	@FXML
 	private Button _playButton;
 
 	@FXML
-	private TextField searchTextArea;
+	private TextField _searchTextArea;
 
 	@FXML
 	private Button _imageButton;
@@ -70,7 +69,7 @@ public class CreateMenuController implements Initializable {
 	private Button _deleteButton;
 
 	@FXML
-	private ListView<HBox> audioBox;
+	private ListView<HBox> _audioBox;
 
 	@FXML
 	private Button _upButton;
@@ -82,36 +81,36 @@ public class CreateMenuController implements Initializable {
 	private Button _searchButton;
 
 	@FXML 
-	private CheckBox _images;
+	private CheckBox _imageSelection;
 
 	@FXML
-	private Button testButton;
+	private Button _testButton;
 
 	@FXML
-	private Button saveButton;
+	private Button _saveButton;
 
 	@FXML
-	private TextArea displayTextArea;
+	private TextArea _displayTextArea;
 
 	@FXML
 	private ChoiceBox<String> _festivalVoice;
 
 	@FXML
-	private Button createButton;
+	private Button _createButton;
 
 	@FXML
-	private Button returnButton;
+	private Button _returnButton;
 
 	@FXML
-	private TextField videoName;
+	private TextField _videoName;
 
 
 	private Stage _stage;
 
+	
 	/**
 	 * this initialises choice box to allow for the selection of different festival voices
 	 */
-
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		ObservableList<String> voices = FXCollections.observableArrayList();
@@ -119,31 +118,18 @@ public class CreateMenuController implements Initializable {
 		_festivalVoice.setItems(voices);
 	}
 
-	@FXML 
-	void handleCreate2() {
-		if(_runningThread) {
-			return;
-		}
-		String name = videoName.getText();
-		if(name.isEmpty()) {
-			error("Creation must have a name");
-			return;
-		}
-		if(_images.isSelected()) {
-			List<String> images = getSelectedImages();
-			System.out.println(images.size());
-			textFileBuilder(images,9);
-			videoMaker();
-		}
-	}
-
-
+	/**
+	 * creation button used to build the final video
+	 */
 	@FXML
-	void handleCreate() {
+	void handleCreate(ActionEvent event) {
+		
+		//ERROR checking
 		if(_runningThread) {
 			error("Please Wait for Processes to Finish");
 			return;
 		}
+		
 		if(_term.isEmpty()) {
 			error("No topic Searched");
 			return;
@@ -152,17 +138,17 @@ public class CreateMenuController implements Initializable {
 			return;
 		}
 
-		_videoName = videoName.getText();
+		__videoName = _videoName.getText();
 
-		if(_videoName.isEmpty()) {
+		if(__videoName.isEmpty()) {
 			error("Creation must have a name");
 			return;
-		}else if((!_videoName.matches("[a-zA-Z0-9_-]*"))) {
+		}else if((!__videoName.matches("[a-zA-Z0-9_-]*"))) {
 			error("name can only contain letter, numbers, _ and - ");
 			return;
 		}else{
 			//checks if file already exists
-			RunBash f = new RunBash("[ -e ./resources/VideoCreations/"+_videoName+".mp4 ]");
+			RunBash f = new RunBash("[ -e ./resources/VideoCreations/"+__videoName+".mp4 ]");
 			_team.submit(f);
 			f.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 
@@ -178,7 +164,7 @@ public class CreateMenuController implements Initializable {
 						if(result.get() != ButtonType.OK) {
 							return;
 						}else {
-							RunBash remove = new RunBash("rm ./resources/VideoCreations/"+_videoName+".mp4");
+							RunBash remove = new RunBash("rm ./resources/VideoCreations/"+__videoName+".mp4");
 							_team.submit(remove);
 							createVideo();
 						}
@@ -193,9 +179,12 @@ public class CreateMenuController implements Initializable {
 	}
 
 
+	/**
+	 * THis method contains most/all of the bash and ffmpeg commands used in video creation
+	 */
 	public void createVideo() {
 		List<String> images = getSelectedImages();
-		String name = videoName.getText();
+		String name = _videoName.getText();
 		String audioFileNames="";
 		for(Node audio:_audioList) {
 			audioFileNames = audioFileNames+audio.toString()+".wav ";
@@ -224,7 +213,7 @@ public class CreateMenuController implements Initializable {
 
 							_team.submit(createVideoAudio);
 							RunBash createVideo2;
-							if(!_images.isSelected()) {
+							if(!_imageSelection.isSelected()) {
 								createVideo2 = new RunBash("ffmpeg -i ./resources/temp/"+name +"noImage.mp4 -i ./resources/temp/output.mp3 -c:v copy -c:a aac -strict experimental "
 										+ "./resources/VideoCreations/"+name+".mp4  &> /dev/null");
 							} else {
@@ -257,8 +246,10 @@ public class CreateMenuController implements Initializable {
 		});
 	}
 
-	//ffmpeg -i ./resources/temp/images/moth-6.jpg -vf drawtext="text='MOTH':fontcolor=white:fontsize=75:x=1002:y=100:" ./resources/temp/images/moth-6.jpg
-
+	/**
+	 * this method marks the images with the topic text
+	 * @param images
+	 */
 	private void markImages(List<String> images) {
 		for (String path: images) {
 			System.out.println(path);
@@ -269,8 +260,11 @@ public class CreateMenuController implements Initializable {
 
 
 
+	/**
+	 * if the user wises to return to the main menu they can, but are prompted with a confirmation msg
+	 */
 	@FXML
-	void handleReturn() {
+	void handleReturn(ActionEvent event) {
 		Alert alert = new Alert(AlertType.CONFIRMATION);
 		alert.setTitle("Are you sure?");
 		alert.setHeaderText("Unsaved work will be lost");
@@ -282,6 +276,9 @@ public class CreateMenuController implements Initializable {
 
 	}
 
+	/**
+	 * creates the popup that is used to select images
+	 */
 	private void initializeSetImages() {
 		FXMLLoader loader = new FXMLLoader();
 
@@ -305,19 +302,21 @@ public class CreateMenuController implements Initializable {
 
 	}
 
+	/**
+	 * Opens image selection menu
+	 */
 	@FXML
-	void handleImages() {
-		//yeap i really did it
-
+	void handleImages(ActionEvent event) {
 		if(_searchButton.isVisible()==true) {
 			error("please search for a subject first");
 			return;
 		} else if (_runningThread) {
-			error("busy");
+			error("A Process is currently running");
 			return;
 		}
 		popupSetImages();
 	}
+	
 	
 	public void popdownSetImages() {
 		_stage.hide();;
@@ -327,10 +326,14 @@ public class CreateMenuController implements Initializable {
 		_stage.show();
 	}
 
+	/**
+	 * Saves highlighted text as audio file
+	 * @param event
+	 */
 	@FXML
 	void handleSaveAudio(ActionEvent event) {
 		audioCount++;
-		String selectedText = displayTextArea.getSelectedText();
+		String selectedText = _displayTextArea.getSelectedText();
 		String[] wordCount = selectedText.split("\\s+");
 
 		if(selectedText.isEmpty()) {
@@ -351,7 +354,7 @@ public class CreateMenuController implements Initializable {
 				public void handle(WorkerStateEvent event) {
 					_runningThread=false;
 					new AudioBar(selectedText,audioCount+"",_audioList);
-					audioBox.setItems(_audioList);
+					_audioBox.setItems(_audioList);
 				}
 			});
 		}else {
@@ -367,7 +370,7 @@ public class CreateMenuController implements Initializable {
 						return;
 					}
 					new AudioBar(selectedText,audioCount+"",_audioList);
-					audioBox.setItems(_audioList);
+					_audioBox.setItems(_audioList);
 
 				}
 			});
@@ -375,9 +378,13 @@ public class CreateMenuController implements Initializable {
 
 	}
 
+	/**
+	 * If there is an entered term, the term is searched on wikipedia
+	 * @param event
+	 */
 	@FXML
 	void handleSearch(ActionEvent event) {
-		_term = searchTextArea.getCharacters().toString();
+		_term = _searchTextArea.getCharacters().toString();
 
 		if(_term.isEmpty()) {
 			error("please enter a term");
@@ -407,12 +414,12 @@ public class CreateMenuController implements Initializable {
 					}
 					_searchButton.setText("search");
 
-					displayTextArea.setText(text);
-					searchTextArea.setEditable(false);
+					_displayTextArea.setText(text);
+					_searchTextArea.setEditable(false);
 					_searchButton.setVisible(false);
-					videoName.setText(_term);
+					_videoName.setText(_term);
 					_imageButton.setText("loading...");
-					GetFlickr imageDown = new GetFlickr(searchTextArea.getText(), 9);
+					GetFlickr imageDown = new GetFlickr(_searchTextArea.getText(), 9);
 					_team.submit(imageDown);
 					imageDown.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 						@Override
@@ -431,9 +438,13 @@ public class CreateMenuController implements Initializable {
 
 	}
 
+	/**
+	 * plays a preview of the selected audio text
+	 * @param event
+	 */
 	@FXML
 	void handleTestAudio(ActionEvent event) {
-		String selectedText = displayTextArea.getSelectedText();
+		String selectedText = _displayTextArea.getSelectedText();
 		if(selectedText.isEmpty() || _runningThread) {
 			return;
 		}
@@ -467,31 +478,39 @@ public class CreateMenuController implements Initializable {
 		}
 	}
 
+	/*
+	 * 
+	 * The following four methods are used to edit play existing creations
+	 */
 	@FXML
 	void handlePlayAudio(ActionEvent event) {
-		HBox audio = audioBox.getSelectionModel().getSelectedItem();
+		HBox audio = _audioBox.getSelectionModel().getSelectedItem();
 		((AudioBar) audio).playAudio();
 	}
 
 	@FXML
 	void handleDeleteAudio(ActionEvent event) {
-		HBox audio = audioBox.getSelectionModel().getSelectedItem();
+		HBox audio = _audioBox.getSelectionModel().getSelectedItem();
 		((AudioBar) audio).delete();
 	}
 
 	@FXML
 	void handleMoveAudioDown(ActionEvent event) {
-		HBox audio = audioBox.getSelectionModel().getSelectedItem();
+		HBox audio = _audioBox.getSelectionModel().getSelectedItem();
 		((AudioBar) audio).moveDown();
 	}
 
 	@FXML
 	void handleMoveAudioUp(ActionEvent event) {
-		HBox audio = audioBox.getSelectionModel().getSelectedItem();
+		HBox audio = _audioBox.getSelectionModel().getSelectedItem();
 		((AudioBar) audio).moveUp();
 	}
 
 
+	/**
+	 * 
+	 * @return currently selected images (default is all images selected)
+	 */
 	private List<String> getSelectedImages() {
 		List<String> images = new ArrayList<String>();
 		List<ImageElement> elements = _controller.getSelectedImages();
@@ -502,12 +521,15 @@ public class CreateMenuController implements Initializable {
 		return images;
 	}
 
+	/**
+	 * builds text file used for ffmpeg command to create slideshow video
+	 * @param images
+	 * @param totalDuration
+	 */
 	private void textFileBuilder(List<String> images, double totalDuration) {
 		double duration = totalDuration/images.size();
 		String stringDuration = Double.toString(duration);
 		String text = ""; 	
-		//File cmd = new File(Main.getPathToResources() + "/temp", "cmd.txt");
-		//cmd.setWritable(true);
 		String lastImage="";
 		for(String name:images) {
 			text= text +"file '" + name +"'\nduration " + stringDuration + "\n";
@@ -522,14 +544,19 @@ public class CreateMenuController implements Initializable {
 
 	}
 	
-	//ffmpeg -f concat -safe 0 -i ./resources/temp/cmd.txt -vsync vfr -pix_fmt yuv420p -y -an ./resources/temp/hey.mp4 -vf "pad=ceil(iw/2)
+	/**
+	 * creates slideshow from stored and selected images
+	 */
 	private void videoMaker() {
-		RunBash makeVideo = new RunBash("ffmpeg -f concat -safe 0 -i ./resources/temp/cmd.txt -r 25 -pix_fmt yuv420p -vf 'scale=trunc(iw/2)*2:trunc(ih/2)*2'  ./resources/temp/"+ _videoName +".mp4");
+		RunBash makeVideo = new RunBash("ffmpeg -f concat -safe 0 -i ./resources/temp/cmd.txt -r 25 -pix_fmt yuv420p -vf 'scale=trunc(iw/2)*2:trunc(ih/2)*2'  ./resources/temp/"+ __videoName +".mp4");
 		_team.submit(makeVideo);
 	}
 
 
 
+	/**
+	 * resets current Create Menu (deletes everything)
+	 */
 	@FXML
 	void handleReset(ActionEvent event) {
 		Alert alert = new Alert(AlertType.CONFIRMATION);
@@ -556,7 +583,4 @@ public class CreateMenuController implements Initializable {
 		alert.setContentText(msg);
 		alert.showAndWait();
 	}
-
-
-
 }

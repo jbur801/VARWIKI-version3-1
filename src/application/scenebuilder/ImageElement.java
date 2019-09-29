@@ -6,15 +6,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import application.Main;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.event.Event;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.control.RadioButton;
-import javafx.scene.effect.Glow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
@@ -23,15 +17,16 @@ public class ImageElement extends AnchorPane{
 	
     @FXML
     private ImageView _imageHolder;
+    
     @FXML
     private RadioButton _button;
+    
     private boolean _isSelected;
     private String _name;
 
     public ImageElement(String imageName) {
     	super();
     	FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("ImageElement.fxml"));
-        //fxmlLoader.setLocation(getClass().getResource("ImageElement.fxml"));
         fxmlLoader.setRoot(this);
         fxmlLoader.setController(this);
         try { 
@@ -49,30 +44,29 @@ public class ImageElement extends AnchorPane{
 	            _imageHolder.setImage(image);
 	            _isSelected=true;
 			} catch (MalformedURLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				
+				e.printStackTrace();	
 			}
-            /**
-            parentProperty().addListener(new ChangeListener() {
-                @Override
-                public void changed(ObservableValue ov, Object oldP, Object newP) {
-                    root = (Parent) newP;
-                    registerDragEvent();
-                }
-            });
-            **/
     }
 
+    /**
+     * returns boolean. If image is selected as video output
+     * @return
+     */
 	public boolean isSelected() {
 		return _isSelected;
 	}
 	
+	/**
+	 * returns the name of the image
+	 */
 	@Override
 	public String toString() {
 		return _name;
 	}
     
+	/**
+	 * if the image is clicked, it is either elected or unselected
+	 */
     @FXML
     public void handleImageClicked() {
     _isSelected = !_isSelected;

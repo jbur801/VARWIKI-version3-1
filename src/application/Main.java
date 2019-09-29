@@ -38,6 +38,11 @@ public class Main extends Application {
 		launch();
 	}
 	
+	/**
+	 * used to change FXML scenebuilder scenes
+	 * @param fxml
+	 * @param location
+	 */
 	public static void changeScene(String fxml, Object location) {
 		initiateFileSystem();
 		try {
@@ -52,15 +57,16 @@ public class Main extends Application {
 			}
 	}
 	
+	/**
+	 * method creates and clears any temp files used in the process of creation
+	 */
 	public static void initiateFileSystem() {
 		_team.submit(new RunBash("rm -r ./resources/temp"));
 		_team.submit(new RunBash("mkdir ./resources ./resources/VideoCreations ./resources/temp ./resources/temp/images"));
-
 	}
 
 
 	public static String getPathToResources() {
-		
 		return System.getProperty("user.dir") + "/bin/resources";
 	}
 
